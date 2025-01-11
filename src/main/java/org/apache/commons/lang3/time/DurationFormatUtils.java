@@ -26,6 +26,7 @@ import java.util.TimeZone;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.Validate;
 
 /**
@@ -44,7 +45,7 @@ import org.apache.commons.lang3.Validate;
  *  <tr><td>'text'</td><td>arbitrary text content</td></tr>
  * </table>
  *
- * <b>Note: It's not currently possible to include a single-quote in a format.</b>
+ * <strong>Note: It's not currently possible to include a single-quote in a format.</strong>
  * <br>
  * Token values are printed using decimal digits.
  * A token character can be repeated to ensure that the field occupies a certain minimum
@@ -57,8 +58,8 @@ import org.apache.commons.lang3.Validate;
  * Multiple optional blocks can be used to group literals with the desired token.
  * <p>
  * Notes on Optional Tokens:<br>
- * <b>Multiple optional tokens without literals can result in impossible to understand output.</b><br>
- * <b>Patterns where all tokens are optional can produce empty strings.</b><br>
+ * <strong>Multiple optional tokens without literals can result in impossible to understand output.</strong><br>
+ * <strong>Patterns where all tokens are optional can produce empty strings.</strong><br>
  * (See examples below)
  * </p>
  * <br>
@@ -73,7 +74,7 @@ import org.apache.commons.lang3.Validate;
  * <tr><td>['{'dd'}']['&lt;'HH'&gt;']['('mm')']</td><td>{01}</td><td>&lt;01&gt;</td><td>(00)</td><td></td></tr>
  * <tr><td>[dHms]</td><td>1</td><td>1</td><td>1</td><td></td></tr>
  * </table>
- * <b>Note: Optional blocks cannot be nested.</b>
+ * <strong>Note: Optional blocks cannot be nested.</strong>
  *
  * @since 2.1
  */
@@ -98,7 +99,7 @@ public class DurationFormatUtils {
             return Stream.of(tokens).anyMatch(token -> token.getValue() == value);
         }
 
-        private final Object value;
+        private final CharSequence value;
         private int count;
         private int optionalIndex = -1;
 
@@ -109,7 +110,7 @@ public class DurationFormatUtils {
          * @param optional whether the token is optional
          * @param optionalIndex the index of the optional token within the pattern
          */
-        Token(final Object value, final boolean optional, final int optionalIndex) {
+        Token(final CharSequence value, final boolean optional, final int optionalIndex) {
             this.value = Objects.requireNonNull(value, "value");
             this.count = 1;
             if (optional) {
@@ -192,6 +193,12 @@ public class DurationFormatUtils {
         }
     }
 
+    private static final int MINUTES_PER_HOUR = 60;
+
+    private static final int SECONDS_PER_MINUTES = 60;
+
+    private static final int HOURS_PER_DAY = 24;
+
     /**
      * Pattern used with {@link FastDateFormat} and {@link SimpleDateFormat}
      * for the ISO 8601 period format used in durations.
@@ -257,9 +264,9 @@ public class DurationFormatUtils {
               }
             }
             if (isLiteral) {
-               if (!inOptional || !lastOutputZero) {
-                     buffer.append(value.toString());
-               }
+                if (!inOptional || !lastOutputZero) {
+                    buffer.append(value.toString());
+                }
             } else if (value.equals(y)) {
                 lastOutputSeconds = false;
                 lastOutputZero = years == 0;
@@ -310,7 +317,7 @@ public class DurationFormatUtils {
                 lastOutputSeconds = false;
             }
             //as soon as we hit first nonliteral in optional, check for literal prefix
-            if (inOptional && !isLiteral && !firstOptionalNonLiteral){
+            if (inOptional && !isLiteral && !firstOptionalNonLiteral) {
                 firstOptionalNonLiteral = true;
                 if (lastOutputZero) {
                     buffer.delete(optionalStart, buffer.length());
@@ -361,19 +368,19 @@ public class DurationFormatUtils {
 
         if (Token.containsTokenWithValue(tokens, d)) {
             days = milliseconds / DateUtils.MILLIS_PER_DAY;
-            milliseconds = milliseconds - (days * DateUtils.MILLIS_PER_DAY);
+            milliseconds -= days * DateUtils.MILLIS_PER_DAY;
         }
         if (Token.containsTokenWithValue(tokens, H)) {
             hours = milliseconds / DateUtils.MILLIS_PER_HOUR;
-            milliseconds = milliseconds - (hours * DateUtils.MILLIS_PER_HOUR);
+            milliseconds -= hours * DateUtils.MILLIS_PER_HOUR;
         }
         if (Token.containsTokenWithValue(tokens, m)) {
             minutes = milliseconds / DateUtils.MILLIS_PER_MINUTE;
-            milliseconds = milliseconds - (minutes * DateUtils.MILLIS_PER_MINUTE);
+            milliseconds -= minutes * DateUtils.MILLIS_PER_MINUTE;
         }
         if (Token.containsTokenWithValue(tokens, s)) {
             seconds = milliseconds / DateUtils.MILLIS_PER_SECOND;
-            milliseconds = milliseconds - (seconds * DateUtils.MILLIS_PER_SECOND);
+            milliseconds -= seconds * DateUtils.MILLIS_PER_SECOND;
         }
 
         return format(tokens, 0, 0, days, hours, minutes, seconds, milliseconds, padWithZeros);
@@ -391,6 +398,7 @@ public class DurationFormatUtils {
     public static String formatDurationHMS(final long durationMillis) {
         return formatDuration(durationMillis, "HH:mm:ss.SSS");
     }
+
     /**
      * Formats the time gap as a string.
      *
@@ -406,6 +414,7 @@ public class DurationFormatUtils {
     public static String formatDurationISO(final long durationMillis) {
         return formatDuration(durationMillis, ISO_EXTENDED_FORMAT_PATTERN, false);
     }
+
     /**
      * Formats an elapsed time into a pluralization correct string.
      *
@@ -430,13 +439,16 @@ public class DurationFormatUtils {
         if (suppressLeadingZeroElements) {
             // this is a temporary marker on the front. Like ^ in regexp.
             duration = " " + duration;
-            String tmp = StringUtils.replaceOnce(duration, " 0 days", StringUtils.EMPTY);
+            final String text = duration;
+            String tmp = Strings.CS.replaceOnce(text, " 0 days", StringUtils.EMPTY);
             if (tmp.length() != duration.length()) {
                 duration = tmp;
-                tmp = StringUtils.replaceOnce(duration, " 0 hours", StringUtils.EMPTY);
+                final String text1 = duration;
+                tmp = Strings.CS.replaceOnce(text1, " 0 hours", StringUtils.EMPTY);
                 if (tmp.length() != duration.length()) {
                     duration = tmp;
-                    tmp = StringUtils.replaceOnce(duration, " 0 minutes", StringUtils.EMPTY);
+                    final String text2 = duration;
+                    tmp = Strings.CS.replaceOnce(text2, " 0 minutes", StringUtils.EMPTY);
                     duration = tmp;
                 }
             }
@@ -446,27 +458,36 @@ public class DurationFormatUtils {
             }
         }
         if (suppressTrailingZeroElements) {
-            String tmp = StringUtils.replaceOnce(duration, " 0 seconds", StringUtils.EMPTY);
+            final String text = duration;
+            String tmp = Strings.CS.replaceOnce(text, " 0 seconds", StringUtils.EMPTY);
             if (tmp.length() != duration.length()) {
                 duration = tmp;
-                tmp = StringUtils.replaceOnce(duration, " 0 minutes", StringUtils.EMPTY);
+                final String text1 = duration;
+                tmp = Strings.CS.replaceOnce(text1, " 0 minutes", StringUtils.EMPTY);
                 if (tmp.length() != duration.length()) {
                     duration = tmp;
-                    tmp = StringUtils.replaceOnce(duration, " 0 hours", StringUtils.EMPTY);
+                    final String text2 = duration;
+                    tmp = Strings.CS.replaceOnce(text2, " 0 hours", StringUtils.EMPTY);
                     if (tmp.length() != duration.length()) {
-                        duration = StringUtils.replaceOnce(tmp, " 0 days", StringUtils.EMPTY);
+                        final String text3 = tmp;
+                        duration = Strings.CS.replaceOnce(text3, " 0 days", StringUtils.EMPTY);
                     }
                 }
             }
         }
         // handle plurals
         duration = " " + duration;
-        duration = StringUtils.replaceOnce(duration, " 1 seconds", " 1 second");
-        duration = StringUtils.replaceOnce(duration, " 1 minutes", " 1 minute");
-        duration = StringUtils.replaceOnce(duration, " 1 hours", " 1 hour");
-        duration = StringUtils.replaceOnce(duration, " 1 days", " 1 day");
+        final String text = duration;
+        duration = Strings.CS.replaceOnce(text, " 1 seconds", " 1 second");
+        final String text1 = duration;
+        duration = Strings.CS.replaceOnce(text1, " 1 minutes", " 1 minute");
+        final String text2 = duration;
+        duration = Strings.CS.replaceOnce(text2, " 1 hours", " 1 hour");
+        final String text3 = duration;
+        duration = Strings.CS.replaceOnce(text3, " 1 days", " 1 day");
         return duration.trim();
     }
+
     /**
      * Formats the time gap as a string, using the specified format.
      * Padding the left-hand side side of numbers with zeroes is optional.
@@ -480,6 +501,7 @@ public class DurationFormatUtils {
     public static String formatPeriod(final long startMillis, final long endMillis, final String format) {
         return formatPeriod(startMillis, endMillis, format, true, TimeZone.getDefault());
     }
+
     /**
      * <p>Formats the time gap as a string, using the specified format.
      * Padding the left-hand side side of numbers with zeroes is optional and
@@ -524,7 +546,7 @@ public class DurationFormatUtils {
         end.setTime(new Date(endMillis));
 
         // initial estimates
-        int milliseconds = end.get(Calendar.MILLISECOND) - start.get(Calendar.MILLISECOND);
+        long milliseconds = end.get(Calendar.MILLISECOND) - start.get(Calendar.MILLISECOND);
         int seconds = end.get(Calendar.SECOND) - start.get(Calendar.SECOND);
         int minutes = end.get(Calendar.MINUTE) - start.get(Calendar.MINUTE);
         int hours = end.get(Calendar.HOUR_OF_DAY) - start.get(Calendar.HOUR_OF_DAY);
@@ -534,19 +556,19 @@ public class DurationFormatUtils {
 
         // each initial estimate is adjusted in case it is under 0
         while (milliseconds < 0) {
-            milliseconds += 1000;
+            milliseconds += DateUtils.MILLIS_PER_SECOND;
             seconds -= 1;
         }
         while (seconds < 0) {
-            seconds += 60;
+            seconds += SECONDS_PER_MINUTES;
             minutes -= 1;
         }
         while (minutes < 0) {
-            minutes += 60;
+            minutes += MINUTES_PER_HOUR;
             hours -= 1;
         }
         while (hours < 0) {
-            hours += 24;
+            hours += HOURS_PER_DAY;
             days -= 1;
         }
 
@@ -616,24 +638,25 @@ public class DurationFormatUtils {
         // number of months and get the real count and not just 0->11.
 
         if (!Token.containsTokenWithValue(tokens, d)) {
-            hours += 24 * days;
+            hours += HOURS_PER_DAY * days;
             days = 0;
         }
         if (!Token.containsTokenWithValue(tokens, H)) {
-            minutes += 60 * hours;
+            minutes += MINUTES_PER_HOUR * hours;
             hours = 0;
         }
         if (!Token.containsTokenWithValue(tokens, m)) {
-            seconds += 60 * minutes;
+            seconds += SECONDS_PER_MINUTES * minutes;
             minutes = 0;
         }
         if (!Token.containsTokenWithValue(tokens, s)) {
-            milliseconds += 1000 * seconds;
+            milliseconds += DateUtils.MILLIS_PER_SECOND * seconds;
             seconds = 0;
         }
 
         return format(tokens, years, months, days, hours, minutes, seconds, milliseconds, padWithZeros);
     }
+
     /**
      * Formats the time gap as a string.
      *
@@ -647,6 +670,7 @@ public class DurationFormatUtils {
     public static String formatPeriodISO(final long startMillis, final long endMillis) {
         return formatPeriod(startMillis, endMillis, ISO_EXTENDED_FORMAT_PATTERN, false, TimeZone.getDefault());
     }
+
     /**
      * Parses a classic date format string into Tokens
      *
@@ -674,14 +698,14 @@ public class DurationFormatUtils {
             // TODO: Need to handle escaping of '
             case '[':
                 if (inOptional) {
-                  throw new IllegalArgumentException("Nested optional block at index: "+i);
+                    throw new IllegalArgumentException("Nested optional block at index: " + i);
                 }
                 optionalIndex++;
                 inOptional = true;
                 break;
             case ']':
                 if (!inOptional) {
-                  throw new IllegalArgumentException("Attempting to close unopened optional block at index: "+i);
+                    throw new IllegalArgumentException("Attempting to close unopened optional block at index: " + i);
                 }
                 inOptional = false;
                 break;
@@ -763,8 +787,12 @@ public class DurationFormatUtils {
      *
      * <p>This constructor is public to permit tools that require a JavaBean instance
      * to operate.</p>
+     *
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public DurationFormatUtils() {
+        // empty
     }
 
 }

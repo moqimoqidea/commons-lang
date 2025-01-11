@@ -48,9 +48,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Unit tests {@link org.apache.commons.lang3.time.FastDateParser}.
- *
- * @since 3.2
+ * Tests {@link org.apache.commons.lang3.time.FastDateParser}.
  */
 public class FastDateParserTest extends AbstractLangTest {
 
@@ -186,7 +184,6 @@ public class FastDateParserTest extends AbstractLangTest {
      * @param format the format string to use
      * @param timeZone the time zone to use
      * @param locale the locale to use
-     *
      * @return the DateParser instance to use for testing
      */
     protected DateParser getInstance(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider,
@@ -629,7 +626,7 @@ public class FastDateParserTest extends AbstractLangTest {
             }
         }
         // SDF and FDF should produce equivalent results
-        assertEquals((f == null), (s == null), "Should both or neither throw Exceptions");
+        assertEquals(f == null, s == null, "Should both or neither throw Exceptions");
         assertEquals(dsdf, dfdp, "Parsed dates should be equal");
     }
 

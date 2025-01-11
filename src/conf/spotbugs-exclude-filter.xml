@@ -36,6 +36,11 @@
     </Or>
   </Match>
 
+  <Match>
+    <!-- TODO ? -->
+    <Bug pattern="CT_CONSTRUCTOR_THROW" />
+  </Match>
+
   <!-- TODO Can any of these be done without breaking binary compatibility? -->
   <Match>
     <Class name="org.apache.commons.lang3.reflect.FieldUtils" />
@@ -106,6 +111,16 @@
       <Method name="compare" params="java.lang.String,java.lang.String,boolean"/>
       <Method name="compareIgnoreCase" params="java.lang.String,java.lang.String,boolean"/>
     </Or>
+    <Bug pattern="ES_COMPARING_PARAMETER_STRING_WITH_EQ" />
+  </Match>
+  <Match>
+    <Class name="org.apache.commons.lang3.Strings$CiStrings" />
+    <Method name="compare" params="java.lang.String,java.lang.String"/>
+    <Bug pattern="ES_COMPARING_PARAMETER_STRING_WITH_EQ" />
+  </Match>
+  <Match>
+    <Class name="org.apache.commons.lang3.Strings$CsStrings" />
+    <Method name="compare" params="java.lang.String,java.lang.String"/>
     <Bug pattern="ES_COMPARING_PARAMETER_STRING_WITH_EQ" />
   </Match>
 
@@ -197,5 +212,19 @@
     <Class name="org.apache.commons.lang3.function.Objects" />
     <Method name="requireNonNull" />
     <Bug pattern="NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE" />
+  </Match>
+  <!-- False positive https://github.com/spotbugs/spotbugs/issues/2957 to be fixed in 4.9.0 -->
+  <Match>
+    <Class name="org.apache.commons.lang3.event.EventListenerSupport" />
+    <Method name="readObject" />
+    <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_READ_OBJECT" />
+  </Match>
+  <!-- Fundamental disagreement with SB: It should be OK to have predefined instances and allow new instances. -->
+  <Match>
+    <Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR" />
+  </Match>
+  <!-- Fundamental disagreement with SB: It should be OK to have predefined instances and allow new instances. -->
+  <Match>
+    <Bug pattern="SING_SINGLETON_IMPLEMENTS_SERIALIZABLE" />
   </Match>
 </FindBugsFilter>

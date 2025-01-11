@@ -29,6 +29,18 @@ import java.util.stream.IntStream;
 public class IntStreams {
 
     /**
+     * Null-safe version of {@link IntStream#of(int[])}.
+     *
+     * @param values the elements of the new stream, may be {@code null}.
+     * @return the new stream on {@code values} or {@link IntStream#empty()}.
+     * @since 3.18.0
+     */
+    @SafeVarargs // Creating a stream from an array is safe
+    public static IntStream of(final int... values) {
+        return values == null ? IntStream.empty() : IntStream.of(values);
+    }
+
+    /**
      * Shorthand for {@code IntStream.range(0, i)}.
      *
      * @param endExclusive the exclusive upper bound.
@@ -48,4 +60,13 @@ public class IntStreams {
         return IntStream.rangeClosed(0, endInclusive);
     }
 
+    /**
+     * Make private in 4.0.
+     *
+     * @deprecated TODO Make private in 4.0.
+     */
+    @Deprecated
+    public IntStreams() {
+        // empty
+    }
 }

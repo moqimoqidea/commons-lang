@@ -105,7 +105,6 @@ public class UnicodeEscaper extends CodePointTranslator {
      * @param codePoint
      *            a Unicode code point
      * @return the hexadecimal string for the given code point
-     *
      * @since 3.2
      */
     protected String toUtf16Escape(final int codePoint) {
@@ -130,10 +129,10 @@ public class UnicodeEscaper extends CodePointTranslator {
             out.write(toUtf16Escape(codePoint));
         } else {
           out.write("\\u");
-          out.write(HEX_DIGITS[(codePoint >> 12) & 15]);
-          out.write(HEX_DIGITS[(codePoint >> 8) & 15]);
-          out.write(HEX_DIGITS[(codePoint >> 4) & 15]);
-          out.write(HEX_DIGITS[(codePoint) & 15]);
+          out.write(HEX_DIGITS[codePoint >> 12 & 15]);
+          out.write(HEX_DIGITS[codePoint >> 8 & 15]);
+          out.write(HEX_DIGITS[codePoint >> 4 & 15]);
+          out.write(HEX_DIGITS[codePoint & 15]);
         }
         return true;
     }

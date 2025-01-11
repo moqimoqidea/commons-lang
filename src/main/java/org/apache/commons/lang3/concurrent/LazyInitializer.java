@@ -37,12 +37,13 @@ import org.apache.commons.lang3.function.FailableSupplier;
  * this class, a subclass of {@link LazyInitializer} has to be created:
  * </p>
  *
- * <pre>
- * public class ComplexObjectInitializer extends LazyInitializer&lt;ComplexObject&gt; {
+ * <pre>{@code
+ * public class ComplexObjectInitializer extends LazyInitializer<ComplexObject> {
  *     &#064;Override
  *     protected ComplexObject initialize() {
  *         return new ComplexObject();
  *     }
+ * }
  * }
  * </pre>
  *
@@ -62,7 +63,7 @@ import org.apache.commons.lang3.function.FailableSupplier;
  * <p>
  * If multiple threads call the {@code get()} method when the object has not yet been created, they are blocked until initialization completes. The algorithm
  * guarantees that only a single instance of the wrapped object class is created, which is passed to all callers. Once initialized, calls to the {@code get()}
- * method are pretty fast because no synchronization is needed (only an access to a <b>volatile</b> member field).
+ * method are pretty fast because no synchronization is needed (only an access to a <strong>volatile</strong> member field).
  * </p>
  *
  * @since 3.0
@@ -73,11 +74,18 @@ public class LazyInitializer<T> extends AbstractConcurrentInitializer<T, Concurr
     /**
      * Builds a new instance.
      *
-     * @param <T> the type of the object managed by the initializer.
-     * @param <I> the type of the initializer managed by this builder.
+     * @param <T> The type of results supplied by this builder.
+     * @param <I> The type of the initializer managed by this builder.
      * @since 3.14.0
      */
     public static class Builder<I extends LazyInitializer<T>, T> extends AbstractBuilder<I, T, Builder<I, T>, ConcurrentException> {
+
+        /**
+         * Constructs a new instance.
+         */
+        public Builder() {
+            // empty
+        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -152,7 +160,7 @@ public class LazyInitializer<T> extends AbstractConcurrentInitializer<T, Concurr
      * {@inheritDoc}
      */
     @Override
-    protected ConcurrentException getTypedException(Exception e) {
+    protected ConcurrentException getTypedException(final Exception e) {
         return new ConcurrentException(e);
     }
 

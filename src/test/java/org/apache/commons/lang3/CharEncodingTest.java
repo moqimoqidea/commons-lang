@@ -28,9 +28,9 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests CharEncoding.
  *
- * @see CharEncoding
+ * @deprecated this test can be removed once the deprecated source class {@link org.apache.commons.lang3.CharEncoding} is removed.
  */
-@SuppressWarnings("deprecation")
+@Deprecated
 public class CharEncodingTest extends AbstractLangTest {
 
     private void assertSupportedEncoding(final String name) {
@@ -47,12 +47,12 @@ public class CharEncodingTest extends AbstractLangTest {
 
     @Test
     public void testMustBeSupportedJava1_3_1_and_above() {
-        this.assertSupportedEncoding(CharEncoding.ISO_8859_1);
-        this.assertSupportedEncoding(CharEncoding.US_ASCII);
-        this.assertSupportedEncoding(CharEncoding.UTF_16);
-        this.assertSupportedEncoding(CharEncoding.UTF_16BE);
-        this.assertSupportedEncoding(CharEncoding.UTF_16LE);
-        this.assertSupportedEncoding(CharEncoding.UTF_8);
+        assertSupportedEncoding(CharEncoding.ISO_8859_1);
+        assertSupportedEncoding(CharEncoding.US_ASCII);
+        assertSupportedEncoding(CharEncoding.UTF_16);
+        assertSupportedEncoding(CharEncoding.UTF_16BE);
+        assertSupportedEncoding(CharEncoding.UTF_16LE);
+        assertSupportedEncoding(CharEncoding.UTF_8);
     }
 
     @Test

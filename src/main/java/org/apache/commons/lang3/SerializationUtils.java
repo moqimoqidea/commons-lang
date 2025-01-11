@@ -25,8 +25,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -48,7 +46,7 @@ import java.util.Objects;
 public class SerializationUtils {
 
     /**
-     * Custom specialization of the standard JDK {@link java.io.ObjectInputStream}
+     * Custom specialization of the standard JDK {@link ObjectInputStream}
      * that uses a custom  {@link ClassLoader} to resolve a class.
      * If the specified {@link ClassLoader} is not able to resolve the class,
      * the context classloader of the current thread will be used.
@@ -61,21 +59,6 @@ public class SerializationUtils {
      * class here is a workaround, see the JIRA issue LANG-626.</p>
      */
      static final class ClassLoaderAwareObjectInputStream extends ObjectInputStream {
-        // Note: This is final to avoid Spotbugs CT_CONSTRUCTOR_THROW
-        private static final Map<String, Class<?>> primitiveTypes =
-                new HashMap<>();
-
-        static {
-            primitiveTypes.put("byte", byte.class);
-            primitiveTypes.put("short", short.class);
-            primitiveTypes.put("int", int.class);
-            primitiveTypes.put("long", long.class);
-            primitiveTypes.put("float", float.class);
-            primitiveTypes.put("double", double.class);
-            primitiveTypes.put("boolean", boolean.class);
-            primitiveTypes.put("char", char.class);
-            primitiveTypes.put("void", void.class);
-        }
 
         private final ClassLoader classLoader;
 
@@ -108,7 +91,7 @@ public class SerializationUtils {
                 try {
                     return Class.forName(name, false, Thread.currentThread().getContextClassLoader());
                 } catch (final ClassNotFoundException cnfe) {
-                    final Class<?> cls = primitiveTypes.get(name);
+                    final Class<?> cls = ClassUtils.getPrimitiveClass(name);
                     if (cls != null) {
                         return cls;
                     }
@@ -120,7 +103,7 @@ public class SerializationUtils {
     }
 
     /**
-     * Deep clone an {@link Object} using serialization.
+     * Deep clones an {@link Object} using serialization.
      *
      * <p>This is many times slower than writing clone methods by hand
      * on all objects in your object graph. However, for complex object
@@ -137,20 +120,15 @@ public class SerializationUtils {
         if (object == null) {
             return null;
         }
-        final byte[] objectData = serialize(object);
-        final ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
-
+        final ByteArrayInputStream bais = new ByteArrayInputStream(serialize(object));
         final Class<T> cls = ObjectUtils.getClass(object);
         try (ClassLoaderAwareObjectInputStream in = new ClassLoaderAwareObjectInputStream(bais, cls.getClassLoader())) {
-            /*
-             * when we serialize and deserialize an object, it is reasonable to assume the deserialized object is of the
-             * same type as the original serialized object
-             */
-            return cls.cast(in.readObject());
+            // When we serialize and deserialize an object, it is reasonable to assume the deserialized object is of the
+            // same type as the original serialized object
+            return (T) in.readObject();
 
         } catch (final ClassNotFoundException | IOException ex) {
-            throw new SerializationException(
-                String.format("%s while reading cloned object data", ex.getClass().getSimpleName()), ex);
+            throw new SerializationException(String.format("%s while reading cloned object data", ex.getClass().getSimpleName()), ex);
         }
     }
 
@@ -275,8 +253,11 @@ public class SerializationUtils {
      * <p>This constructor is public to permit tools that require a JavaBean instance
      * to operate.</p>
      * @since 2.0
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public SerializationUtils() {
+        // empty
     }
 
 }

@@ -103,6 +103,8 @@ public class ConstructorUtils {
      * @param parameterTypes find method with compatible parameters
      * @return the constructor, null if no matching accessible constructor found
      * @throws NullPointerException if {@code cls} is {@code null}
+     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @see SecurityManager#checkPermission
      */
     public static <T> Constructor<T> getMatchingAccessibleConstructor(final Class<T> cls,
             final Class<?>... parameterTypes) {
@@ -152,12 +154,13 @@ public class ConstructorUtils {
      * @param cls  the class to be constructed, not {@code null}
      * @param args  the array of arguments, {@code null} treated as empty
      * @return new instance of {@code cls}, not {@code null}
-     *
      * @throws NullPointerException if {@code cls} is {@code null}
      * @throws NoSuchMethodException if a matching constructor cannot be found
      * @throws IllegalAccessException if invocation is not permitted by security
      * @throws InvocationTargetException if an error occurs on invocation
      * @throws InstantiationException if an error occurs on instantiation
+     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @see SecurityManager#checkPermission
      * @see #invokeConstructor(Class, Object[], Class[])
      */
     public static <T> T invokeConstructor(final Class<T> cls, Object... args)
@@ -179,12 +182,13 @@ public class ConstructorUtils {
      * @param args  the array of arguments, {@code null} treated as empty
      * @param parameterTypes  the array of parameter types, {@code null} treated as empty
      * @return new instance of {@code cls}, not {@code null}
-     *
      * @throws NullPointerException if {@code cls} is {@code null}
      * @throws NoSuchMethodException if a matching constructor cannot be found
      * @throws IllegalAccessException if invocation is not permitted by security
      * @throws InvocationTargetException if an error occurs on invocation
      * @throws InstantiationException if an error occurs on instantiation
+     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @see SecurityManager#checkPermission
      * @see Constructor#newInstance
      */
     public static <T> T invokeConstructor(final Class<T> cls, Object[] args, Class<?>[] parameterTypes)
@@ -215,7 +219,6 @@ public class ConstructorUtils {
      * @param cls the class to be constructed, not {@code null}
      * @param args the array of arguments, {@code null} treated as empty
      * @return new instance of {@code cls}, not {@code null}
-     *
      * @throws NullPointerException if {@code cls} is {@code null}
      * @throws NoSuchMethodException if a matching constructor cannot be found
      * @throws IllegalAccessException if invocation is not permitted by security
@@ -242,7 +245,6 @@ public class ConstructorUtils {
      * @param args the array of arguments, {@code null} treated as empty
      * @param parameterTypes  the array of parameter types, {@code null} treated as empty
      * @return new instance of {@code cls}, not {@code null}
-     *
      * @throws NullPointerException if {@code cls} is {@code null}
      * @throws NoSuchMethodException if a matching constructor cannot be found
      * @throws IllegalAccessException if invocation is not permitted by security
@@ -257,8 +259,7 @@ public class ConstructorUtils {
         parameterTypes = ArrayUtils.nullToEmpty(parameterTypes);
         final Constructor<T> ctor = getAccessibleConstructor(cls, parameterTypes);
         if (ctor == null) {
-            throw new NoSuchMethodException(
-                "No such accessible constructor on object: "+ cls.getName());
+            throw new NoSuchMethodException("No such accessible constructor on object: " + cls.getName());
         }
         return ctor.newInstance(args);
     }
@@ -288,8 +289,12 @@ public class ConstructorUtils {
      *
      * <p>This constructor is {@code public} to permit tools that require a JavaBean
      * instance to operate.</p>
+     *
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public ConstructorUtils() {
+        // empty
     }
 
 }

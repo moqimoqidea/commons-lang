@@ -24,6 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import org.apache.commons.lang3.AbstractLangTest;
 import org.apache.commons.lang3.ArrayUtils;
@@ -31,11 +34,43 @@ import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link DiffBuilder}.
+ * Tests {@link DiffBuilder}.
  */
 public class DiffBuilderTest extends AbstractLangTest {
 
+    /**
+     * Test fixture.
+     */
+    private static class NestedTypeTestClass implements Diffable<NestedTypeTestClass> {
+
+        private final ToStringStyle style = SHORT_STYLE;
+        private boolean booleanField = true;
+
+        @Override
+        public DiffResult<NestedTypeTestClass> diff(final NestedTypeTestClass obj) {
+            // @formatter:off
+            return new DiffBuilder<>(this, obj, style)
+                    .append("boolean", booleanField, obj.booleanField)
+                    .build();
+            // @formatter:on
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            return EqualsBuilder.reflectionEquals(this, obj, false);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this, false);
+        }
+    }
+
+    /**
+     * Test fixture.
+     */
     private static final class TypeTestClass implements Diffable<TypeTestClass> {
+
         private ToStringStyle style = SHORT_STYLE;
         private boolean booleanField = true;
         private boolean[] booleanArrayField = { true };
@@ -55,6 +90,7 @@ public class DiffBuilderTest extends AbstractLangTest {
         private short[] shortArrayField = { 1 };
         private Object objectField;
         private Object[] objectArrayField = { null };
+        private final NestedTypeTestClass nestedDiffableField = new NestedTypeTestClass();
 
         @Override
         public DiffResult<TypeTestClass> diff(final TypeTestClass obj) {
@@ -78,6 +114,7 @@ public class DiffBuilderTest extends AbstractLangTest {
                     .append("shortArray", shortArrayField, obj.shortArrayField)
                     .append("objectField", objectField, obj.objectField)
                     .append("objectArrayField", objectArrayField, obj.objectArrayField)
+                    .append("nestedDiffableField", nestedDiffableField.diff(obj.nestedDiffableField))
                     .build();
             // @formatter:on
         }
@@ -159,7 +196,7 @@ public class DiffBuilderTest extends AbstractLangTest {
                 .append("foo", new short[] { 1 }, new short[] { 1 })
                 .append("foo", new Object[] { 1, "two" }, new Object[] { 1, "two" })
                 .build();
-        // @formatter:off
+        // @formatter:on
         assertEquals(0, list.getNumberOfDiffs());
     }
 
@@ -177,7 +214,7 @@ public class DiffBuilderTest extends AbstractLangTest {
                 .append("foo", new short[] { 1 }, new short[] { 1 })
                 .append("foo", new Object[] { 1, "two" }, new Object[] { 1, "two" })
                 .build();
-        // @formatter:off
+        // @formatter:on
         assertEquals(0, list.getNumberOfDiffs());
     }
 
@@ -214,6 +251,16 @@ public class DiffBuilderTest extends AbstractLangTest {
         final DiffResult<TypeTestClass> list = new DiffBuilder<>(class1, class2, SHORT_STYLE).append("prop1", class1.diff(class2)).build();
         assertEquals(1, list.getNumberOfDiffs());
         assertEquals("prop1.int", list.getDiffs().get(0).getFieldName());
+    }
+
+    @Test
+    public void testDiffResultEquals() {
+        final TypeTestClass class1 = new TypeTestClass();
+        class1.intField = 2;
+
+        final DiffResult<TypeTestClass> list = new DiffBuilder<>(class1, class1, SHORT_STYLE).append("prop1", class1.diff(class1)).build();
+        assertEquals(0, list.getNumberOfDiffs());
+        assertTrue(list.getDiffs().isEmpty());
     }
 
     @Test
@@ -310,6 +357,60 @@ public class DiffBuilderTest extends AbstractLangTest {
         final Diff<?> diff = list.getDiffs().get(0);
         assertArrayEquals(ArrayUtils.toObject(class1.longArrayField), (Object[]) diff.getLeft());
         assertArrayEquals(ArrayUtils.toObject(class2.longArrayField), (Object[]) diff.getRight());
+    }
+
+    @Test
+    public void testNestedDiffableNo() {
+        final TypeTestClass class1 = new TypeTestClass();
+        final TypeTestClass class2 = new TypeTestClass();
+        final DiffResult<TypeTestClass> list = class1.diff(class2);
+        assertEquals(0, list.getNumberOfDiffs());
+        final List<Diff<?>> diff = list.getDiffs();
+        assertTrue(diff.isEmpty());
+    }
+
+    @Test
+    public void testNestedDiffableYesNestedNot() {
+        final TypeTestClass class1 = new TypeTestClass();
+        final TypeTestClass class2 = new TypeTestClass();
+        class2.intField = 9;
+        final DiffResult<TypeTestClass> list = class1.diff(class2);
+        assertEquals(1, list.getNumberOfDiffs());
+        final Diff<?> diff = list.getDiffs().get(0);
+        assertEquals(Integer.class, diff.getType());
+        assertEquals(1, diff.getLeft());
+        assertEquals(9, diff.getRight());
+    }
+
+    @Test
+    public void testNestedDiffableYesNestedOnly() {
+        final TypeTestClass class1 = new TypeTestClass();
+        final TypeTestClass class2 = new TypeTestClass();
+        class2.nestedDiffableField.booleanField = false;
+        final DiffResult<TypeTestClass> list = class1.diff(class2);
+        assertEquals(1, list.getNumberOfDiffs());
+        final Diff<?> diff = list.getDiffs().get(0);
+        assertEquals(Object.class, diff.getType());
+        assertEquals(Boolean.TRUE, diff.getLeft());
+        assertEquals(Boolean.FALSE, diff.getRight());
+    }
+
+    @Test
+    public void testNestedDiffableYesNestedYes() {
+        final TypeTestClass class1 = new TypeTestClass();
+        final TypeTestClass class2 = new TypeTestClass();
+        class2.intField = 9;
+        class2.nestedDiffableField.booleanField = false;
+        final DiffResult<TypeTestClass> list = class1.diff(class2);
+        assertEquals(2, list.getNumberOfDiffs());
+        final Diff<?> diff0 = list.getDiffs().get(0);
+        assertEquals(Integer.class, diff0.getType());
+        assertEquals(1, diff0.getLeft());
+        assertEquals(9, diff0.getRight());
+        final Diff<?> diff1 = list.getDiffs().get(1);
+        assertEquals(Object.class, diff1.getType());
+        assertEquals(Boolean.TRUE, diff1.getLeft());
+        assertEquals(Boolean.FALSE, diff1.getRight());
     }
 
     @Test

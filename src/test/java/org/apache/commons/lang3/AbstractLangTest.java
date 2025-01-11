@@ -16,7 +16,7 @@
  */
 package org.apache.commons.lang3;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.junit.jupiter.api.AfterEach;
@@ -31,11 +31,8 @@ public class AbstractLangTest {
      */
     @AfterEach
     public void after() {
-        validateNullToStringStyleRegistry();
-    }
-
-    void validateNullToStringStyleRegistry() {
-        assertNull(ToStringStyle.getRegistry(), "Expected null, actual: " + ToStringStyle.getRegistry());
+        assertTrue(ToStringStyle.getRegistry().isEmpty(), "Expected null, actual: " + ToStringStyle.getRegistry());
+        // TODO Do more to make sure memory is not retained, maybe like Log4j checks for it.
     }
 
 }

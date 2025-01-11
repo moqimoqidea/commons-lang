@@ -44,11 +44,12 @@ import org.junitpioneer.jupiter.DefaultLocale;
 import org.junitpioneer.jupiter.DefaultTimeZone;
 
 /**
- * Unit tests {@link org.apache.commons.lang3.time.FastDateFormat}.
- *
- * @since 2.0
+ * Tests {@link org.apache.commons.lang3.time.FastDateFormat}.
  */
 public class FastDateFormatTest extends AbstractLangTest {
+
+    private static final String ISO_8601_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZZ";
+
     private static final int NTHREADS = 10;
 
     private static final int NROUNDS = 10000;
@@ -58,7 +59,7 @@ public class FastDateFormatTest extends AbstractLangTest {
 
     private AtomicLongArray measureTime(final Format printer, final Format parser) throws InterruptedException {
         final ExecutorService pool = Executors.newFixedThreadPool(NTHREADS);
-        final AtomicInteger failures = new AtomicInteger(0);
+        final AtomicInteger failures = new AtomicInteger();
         final AtomicLongArray totalElapsed = new AtomicLongArray(2);
         try {
             for (int i = 0; i < NTHREADS; ++i) {
@@ -247,7 +248,7 @@ public class FastDateFormatTest extends AbstractLangTest {
     }
 
     @Test
-    public void testLANG_1152() {
+    public void testLang1152() {
         final TimeZone utc = FastTimeZone.getGmtTimeZone();
         final Date date = new Date(Long.MAX_VALUE);
 
@@ -258,15 +259,29 @@ public class FastDateFormatTest extends AbstractLangTest {
         assertEquals("17/08/292278994", dateAsString);
     }
     @Test
-    public void testLANG_1267() {
+    public void testLang1267() {
         FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    }
+
+    @Test
+    public void testLang1641() {
+        assertSame(FastDateFormat.getInstance(ISO_8601_DATE_FORMAT), FastDateFormat.getInstance(ISO_8601_DATE_FORMAT));
+        // commons-lang's GMT TimeZone
+        assertSame(FastDateFormat.getInstance(ISO_8601_DATE_FORMAT, FastTimeZone.getGmtTimeZone()),
+                FastDateFormat.getInstance(ISO_8601_DATE_FORMAT, FastTimeZone.getGmtTimeZone()));
+        // default TimeZone
+        assertSame(FastDateFormat.getInstance(ISO_8601_DATE_FORMAT, TimeZone.getDefault()),
+                FastDateFormat.getInstance(ISO_8601_DATE_FORMAT, TimeZone.getDefault()));
+        // TimeZones that are identical in every way except ID
+        assertNotSame(FastDateFormat.getInstance(ISO_8601_DATE_FORMAT, TimeZone.getTimeZone("Australia/Broken_Hill")),
+                FastDateFormat.getInstance(ISO_8601_DATE_FORMAT, TimeZone.getTimeZone("Australia/Yancowinna")));
     }
 
     /**
      * According to LANG-954 (https://issues.apache.org/jira/browse/LANG-954) this is broken in Android 2.1.
      */
     @Test
-    public void testLANG_954() {
+    public void testLang954() {
         final String pattern = "yyyy-MM-dd'T'";
         FastDateFormat.getInstance(pattern);
     }
@@ -275,13 +290,11 @@ public class FastDateFormatTest extends AbstractLangTest {
     public void testParseSync() throws InterruptedException {
         final String pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS";
         final SimpleDateFormat inner = new SimpleDateFormat(pattern);
-        final Format sdf= new Format() {
+        final Format sdf = new Format() {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public StringBuffer format(final Object obj,
-                    final StringBuffer toAppendTo,
-                    final FieldPosition fieldPosition) {
+            public StringBuffer format(final Object obj, final StringBuffer toAppendTo, final FieldPosition fieldPosition) {
                 synchronized (this) {
                     return inner.format(obj, toAppendTo, fieldPosition);
                 }
@@ -294,13 +307,13 @@ public class FastDateFormatTest extends AbstractLangTest {
                 }
             }
         };
-        final AtomicLongArray sdfTime= measureTime(sdf, sdf);
+        final AtomicLongArray sdfTime = measureTime(sdf, sdf);
 
         final Format fdf = FastDateFormat.getInstance(pattern);
-        final AtomicLongArray fdfTime= measureTime(fdf, fdf);
+        final AtomicLongArray fdfTime = measureTime(fdf, fdf);
 
-        //System.out.println(">>FastDateFormatTest: FastDatePrinter:"+fdfTime.get(0)+"  SimpleDateFormat:"+sdfTime.get(0));
-        //System.out.println(">>FastDateFormatTest: FastDateParser:"+fdfTime.get(1)+"  SimpleDateFormat:"+sdfTime.get(1));
+        // System.out.println(">>FastDateFormatTest: FastDatePrinter:"+fdfTime.get(0)+" SimpleDateFormat:"+sdfTime.get(0));
+        // System.out.println(">>FastDateFormatTest: FastDateParser:"+fdfTime.get(1)+" SimpleDateFormat:"+sdfTime.get(1));
     }
 
     @Test

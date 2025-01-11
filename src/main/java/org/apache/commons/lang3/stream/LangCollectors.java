@@ -17,6 +17,7 @@
 
 package org.apache.commons.lang3.stream;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -27,11 +28,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Implementations of {@link Collector} that implement various useful reduction operations.
+ * Implementations of {@link Collector} that implement various reduction operations.
  * <p>
  * This class is called {@code LangCollectors} instead of {@code Collectors} to avoid clashes with {@link Collectors}.
  * </p>
@@ -92,30 +94,62 @@ public final class LangCollectors {
     private static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
 
     /**
-     * Returns a {@code Collector} that concatenates the input elements, separated by the specified delimiter, in encounter
-     * order.
+     * Delegates to {@link Stream#collect(Collector)} for a Stream on the given array.
+     *
+     * @param <T>       The type of the array elements.
+     * @param <R>       the type of the result.
+     * @param <A>       the intermediate accumulation type of the {@code Collector}.
+     * @param collector the {@code Collector} describing the reduction.
+     * @param array     The array, assumed to be unmodified during use, a null array treated as an empty array.
+     * @return the result of the reduction
+     * @see Stream#collect(Collector)
+     * @see Arrays#stream(Object[])
+     * @see Collectors
+     * @since 3.16.0
+     */
+    @SafeVarargs
+    public static <T, R, A> R collect(final Collector<? super T, A, R> collector, final T... array) {
+        return Streams.of(array).collect(collector);
+    }
+
+    /**
+     * Returns a {@code Collector} that concatenates the input elements, separated by the specified delimiter, in encounter order.
      * <p>
      * This is a variation of {@link Collectors#joining()} that works with any element class, not just {@code CharSequence}.
      * </p>
+     * <p>
+     * For example:
+     * </p>
      *
-     * @return A {@code Collector} which concatenates Object elements, separated by the specified delimiter, in encounter
-     *         order.
+     * <pre>
+     * Stream.of(Long.valueOf(1), Long.valueOf(2), Long.valueOf(3))
+     *    .collect(LangCollectors.joining())
+     * returns "123"
+     * </pre>
+     *
+     * @return A {@code Collector} which concatenates Object elements, separated by the specified delimiter, in encounter order.
      */
     public static Collector<Object, ?, String> joining() {
         return new SimpleCollector<>(StringBuilder::new, StringBuilder::append, StringBuilder::append, StringBuilder::toString, CH_NOID);
     }
 
     /**
-     * Returns a {@code Collector} that concatenates the input elements, separated by the specified delimiter, in encounter
-     * order.
+     * Returns a {@code Collector} that concatenates the input elements, separated by the specified delimiter, in encounter order.
      * <p>
-     * This is a variation of {@link Collectors#joining(CharSequence)} that works with any element class, not just
-     * {@code CharSequence}.
+     * This is a variation of {@link Collectors#joining(CharSequence)} that works with any element class, not just {@code CharSequence}.
+     * </p>
+     * <p>
+     * For example:
      * </p>
      *
+     * <pre>
+     * Stream.of(Long.valueOf(1), Long.valueOf(2), Long.valueOf(3))
+     *   .collect(LangCollectors.joining("-"))
+     * returns "1-2-3"
+     * </pre>
+     *
      * @param delimiter the delimiter to be used between each element.
-     * @return A {@code Collector} which concatenates Object elements, separated by the specified delimiter, in encounter
-     *         order.
+     * @return A {@code Collector} which concatenates Object elements, separated by the specified delimiter, in encounter order.
      */
     public static Collector<Object, ?, String> joining(final CharSequence delimiter) {
         return joining(delimiter, StringUtils.EMPTY, StringUtils.EMPTY);
@@ -128,6 +162,15 @@ public final class LangCollectors {
      * This is a variation of {@link Collectors#joining(CharSequence, CharSequence, CharSequence)} that works with any
      * element class, not just {@code CharSequence}.
      * </p>
+     * <p>
+     * For example:
+     * </p>
+     *
+     * <pre>
+     * Stream.of(Long.valueOf(1), Long.valueOf(2), Long.valueOf(3))
+     *   .collect(LangCollectors.joining("-", "[", "]"))
+     * returns "[1-2-3]"
+     * </pre>
      *
      * @param delimiter the delimiter to be used between each element
      * @param prefix the sequence of characters to be used at the beginning of the joined result
@@ -140,19 +183,27 @@ public final class LangCollectors {
     }
 
     /**
-     * Returns a {@code Collector} that concatenates the input elements, separated by the specified delimiter, with the
-     * specified prefix and suffix, in encounter order.
+     * Returns a {@code Collector} that concatenates the input elements, separated by the specified delimiter, with the specified prefix and suffix, in
+     * encounter order.
      * <p>
-     * This is a variation of {@link Collectors#joining(CharSequence, CharSequence, CharSequence)} that works with any
-     * element class, not just {@code CharSequence}.
+     * This is a variation of {@link Collectors#joining(CharSequence, CharSequence, CharSequence)} that works with any element class, not just
+     * {@code CharSequence}.
+     * </p>
+     * <p>
+     * For example:
      * </p>
      *
+     * <pre>{@code
+     * Stream.of(Long.valueOf(1), null, Long.valueOf(3))
+     *   .collect(LangCollectors.joining("-", "[", "]", o -> Objects.toString(o, "NUL")))
+     * returns "[1-NUL-3]"
+     * }</pre>
+     *
      * @param delimiter the delimiter to be used between each element
-     * @param prefix the sequence of characters to be used at the beginning of the joined result
-     * @param suffix the sequence of characters to be used at the end of the joined result
-     * @param toString A function that takes an Object and returns a non-null String.
-     * @return A {@code Collector} which concatenates CharSequence elements, separated by the specified delimiter, in
-     *         encounter order
+     * @param prefix    the sequence of characters to be used at the beginning of the joined result
+     * @param suffix    the sequence of characters to be used at the end of the joined result
+     * @param toString  A function that takes an Object and returns a non-null String.
+     * @return A {@code Collector} which concatenates CharSequence elements, separated by the specified delimiter, in encounter order
      */
     public static Collector<Object, ?, String> joining(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix,
         final Function<Object, String> toString) {

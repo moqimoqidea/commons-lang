@@ -172,9 +172,28 @@ public enum JavaVersion {
     JAVA_21(21, "21"),
 
     /**
+     * Java 22.
+     *
+     * @since 3.15.0
+     */
+    JAVA_22(22, "22"),
+
+    /**
+     * Java 23.
+     *
+     * @since 3.18.0
+     */
+    JAVA_23(23, "23"),
+
+    /**
      * The most recent Java version. Mainly introduced to avoid to break when a new version of Java is used.
      */
     JAVA_RECENT(maxVersion(), Float.toString(maxVersion()));
+
+    /**
+     * The regex to split version strings.
+     */
+    private static final String VERSION_SPLIT_REGEX = "\\.";
 
     /**
      * Transforms the given string with a Java version number to the
@@ -182,7 +201,7 @@ public enum JavaVersion {
      * internally.
      *
      * @param versionStr the Java version as string
-     * @return the corresponding enumeration constant or <b>null</b> if the
+     * @return the corresponding enumeration constant or <strong>null</strong> if the
      * version is unknown
      */
     static JavaVersion get(final String versionStr) {
@@ -234,6 +253,10 @@ public enum JavaVersion {
             return JAVA_20;
         case "21":
             return JAVA_21;
+        case "22":
+            return JAVA_22;
+        case "23":
+            return JAVA_23;
         default:
             final float v = toFloatVersion(versionStr);
             if (v - 1. < 1.) { // then we need to check decimals > .9
@@ -255,10 +278,9 @@ public enum JavaVersion {
      * internally.
      *
      * @param versionStr the Java version as string
-     * @return the corresponding enumeration constant or <b>null</b> if the
+     * @return the corresponding enumeration constant or <strong>null</strong> if the
      * version is unknown
      */
-    // helper for static importing
     static JavaVersion getJavaVersion(final String versionStr) {
         return get(versionStr);
     }
@@ -269,22 +291,26 @@ public enum JavaVersion {
      * @return the value of {@code java.specification.version} system property or 99.0 if it is not set.
      */
     private static float maxVersion() {
-        final float v = toFloatVersion(System.getProperty("java.specification.version", "99.0"));
+        final float v = toFloatVersion(SystemProperties.getJavaSpecificationVersion("99.0"));
         return v > 0 ? v : 99f;
+    }
+
+    static String[] split(final String value) {
+        return value.split(VERSION_SPLIT_REGEX);
     }
 
     /**
      * Parses a float value from a String.
      *
      * @param value the String to parse.
-     * @return the float value represented by the string or -1 if the given String can not be parsed.
+     * @return the float value represented by the string or -1 if the given String cannot be parsed.
      */
     private static float toFloatVersion(final String value) {
         final int defaultReturnValue = -1;
         if (!value.contains(".")) {
             return NumberUtils.toFloat(value, defaultReturnValue);
         }
-        final String[] toParse = value.split("\\.");
+        final String[] toParse = split(value);
         if (toParse.length >= 2) {
             return NumberUtils.toFloat(toParse[0] + '.' + toParse[1], defaultReturnValue);
         }
@@ -313,7 +339,7 @@ public enum JavaVersion {
     }
 
     /**
-     * Whether this version of Java is at least the version of Java passed in.
+     * Tests whether this version of Java is at least the version of Java passed in.
      *
      * <p>For example:<br>
      *  {@code myVersion.atLeast(JavaVersion.JAVA_1_4)}</p>
@@ -326,7 +352,7 @@ public enum JavaVersion {
     }
 
     /**
-     * Whether this version of Java is at most the version of Java passed in.
+     * Tests whether this version of Java is at most the version of Java passed in.
      *
      * <p>For example:<br>
      *  {@code myVersion.atMost(JavaVersion.JAVA_1_4)}</p>

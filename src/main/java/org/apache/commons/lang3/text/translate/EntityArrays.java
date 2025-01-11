@@ -413,7 +413,7 @@ public class EntityArrays {
      */
     public static String[][] invert(final String[][] array) {
         final String[][] newarray = new String[array.length][2];
-        for (int i = 0; i<array.length; i++) {
+        for (int i = 0; i < array.length; i++) {
             newarray[i][0] = array[i][1];
             newarray[i][1] = array[i][0];
         }
@@ -455,4 +455,13 @@ public class EntityArrays {
         return JAVA_CTRL_CHARS_UNESCAPE.clone();
     }
 
+    /**
+     * Constructs a new instance.
+     *
+     * @deprecated Will be removed in 4.0.0.
+     */
+    @Deprecated
+    public EntityArrays() {
+        // empty
+    }
 }

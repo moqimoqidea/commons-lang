@@ -44,9 +44,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * or another variation of the factory methods of {@link FastDateFormat}.</p>
  *
  * <p>Since FastDatePrinter is thread safe, you can use a static member instance:</p>
- * <code>
+ * {@code
  *     private static final DatePrinter DATE_PRINTER = FastDateFormat.getInstance("yyyy-MM-dd");
- * </code>
+ * }
  *
  * <p>This class can be used as a direct replacement to
  * {@link SimpleDateFormat} in most formatting situations.
@@ -218,11 +218,11 @@ public class FastDatePrinter implements DatePrinter, Serializable {
             final int hours = offset / (60 * 60 * 1000);
             appendDigits(buffer, hours);
 
-            if (length<5) {
+            if (length < 5) {
                 return;
             }
 
-            if (length==6) {
+            if (length == 6) {
                 buffer.append(':');
             }
 
@@ -386,7 +386,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
         @Override
         public int estimateLength() {
             int max = 0;
-            for (int i=values.length; --i >= 0; ) {
+            for (int i = values.length; --i >= 0;) {
                 final int len = values[i].length();
                 if (len > max) {
                     max = len;
@@ -445,7 +445,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
          */
         @Override
         public int hashCode() {
-            return (style * 31 + locale.hashCode() ) * 31 + timeZone.hashCode();
+            return (style * 31 + locale.hashCode()) * 31 + timeZone.hashCode();
         }
     }
     /**
@@ -477,11 +477,8 @@ public class FastDatePrinter implements DatePrinter, Serializable {
         @Override
         public void appendTo(final Appendable buffer, final Calendar calendar) throws IOException {
             final TimeZone zone = calendar.getTimeZone();
-            if (calendar.get(Calendar.DST_OFFSET) == 0) {
-                buffer.append(getTimeZoneDisplay(zone, false, style, locale));
-            } else {
-                buffer.append(getTimeZoneDisplay(zone, true, style, locale));
-            }
+            final boolean daylight = calendar.get(Calendar.DST_OFFSET) != 0;
+            buffer.append(getTimeZoneDisplay(zone, daylight, style, locale));
         }
 
         /**
@@ -765,7 +762,6 @@ public class FastDatePrinter implements DatePrinter, Serializable {
 
         /**
          * Constructs an instance of {@link UnpaddedMonthField}.
-         *
          */
         UnpaddedMonthField() {
         }
@@ -976,7 +972,7 @@ public class FastDatePrinter implements DatePrinter, Serializable {
             int digit = 0;
             while (value != 0) {
                 work[digit++] = (char) (value % 10 + '0');
-                value = value / 10;
+                value /= 10;
             }
 
             // pad with zeros
@@ -1077,7 +1073,6 @@ public class FastDatePrinter implements DatePrinter, Serializable {
      * @param calendar the calendar to format
      * @param buf the buffer to format into
      * @return the specified string buffer
-     *
      * @deprecated use {@link #format(Calendar)} or {@link #format(Calendar, Appendable)}
      */
     @Deprecated

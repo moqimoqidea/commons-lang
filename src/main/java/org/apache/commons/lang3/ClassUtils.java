@@ -92,15 +92,15 @@ public class ClassUtils {
     private static final Map<String, Class<?>> namePrimitiveMap = new HashMap<>();
 
     static {
-        namePrimitiveMap.put("boolean", Boolean.TYPE);
-        namePrimitiveMap.put("byte", Byte.TYPE);
-        namePrimitiveMap.put("char", Character.TYPE);
-        namePrimitiveMap.put("short", Short.TYPE);
-        namePrimitiveMap.put("int", Integer.TYPE);
-        namePrimitiveMap.put("long", Long.TYPE);
-        namePrimitiveMap.put("double", Double.TYPE);
-        namePrimitiveMap.put("float", Float.TYPE);
-        namePrimitiveMap.put("void", Void.TYPE);
+        namePrimitiveMap.put(Boolean.TYPE.getSimpleName(), Boolean.TYPE);
+        namePrimitiveMap.put(Byte.TYPE.getSimpleName(), Byte.TYPE);
+        namePrimitiveMap.put(Character.TYPE.getSimpleName(), Character.TYPE);
+        namePrimitiveMap.put(Double.TYPE.getSimpleName(), Double.TYPE);
+        namePrimitiveMap.put(Float.TYPE.getSimpleName(), Float.TYPE);
+        namePrimitiveMap.put(Integer.TYPE.getSimpleName(), Integer.TYPE);
+        namePrimitiveMap.put(Long.TYPE.getSimpleName(), Long.TYPE);
+        namePrimitiveMap.put(Short.TYPE.getSimpleName(), Short.TYPE);
+        namePrimitiveMap.put(Void.TYPE.getSimpleName(), Void.TYPE);
     }
 
     /**
@@ -527,24 +527,21 @@ public class ClassUtils {
      * @throws ClassNotFoundException if the class is not found
      */
     public static Class<?> getClass(final ClassLoader classLoader, final String className, final boolean initialize) throws ClassNotFoundException {
-        try {
-            Class<?> clazz = namePrimitiveMap.get(className);
-            return clazz != null ? clazz : Class.forName(toCanonicalName(className), initialize, classLoader);
-        } catch (final ClassNotFoundException ex) {
-            // allow path separators (.) as inner class name separators
-            final int lastDotIndex = className.lastIndexOf(PACKAGE_SEPARATOR_CHAR);
-
-            if (lastDotIndex != -1) {
-                try {
-                    return getClass(classLoader, className.substring(0, lastDotIndex) + INNER_CLASS_SEPARATOR_CHAR + className.substring(lastDotIndex + 1),
-                        initialize);
-                } catch (final ClassNotFoundException ignored) {
-                    // ignore exception
+        // This method was re-written to avoid recursion and stack overflows found by fuzz testing.
+        String next = className;
+        int lastDotIndex = -1;
+        do {
+            try {
+                final Class<?> clazz = getPrimitiveClass(next);
+                return clazz != null ? clazz : Class.forName(toCanonicalName(next), initialize, classLoader);
+            } catch (final ClassNotFoundException ex) {
+                lastDotIndex = next.lastIndexOf(PACKAGE_SEPARATOR_CHAR);
+                if (lastDotIndex != -1) {
+                    next = next.substring(0, lastDotIndex) + INNER_CLASS_SEPARATOR_CHAR + next.substring(lastDotIndex + 1);
                 }
             }
-
-            throw ex;
-        }
+        } while (lastDotIndex != -1);
+        throw new ClassNotFoundException(next);
     }
 
     /**
@@ -751,14 +748,24 @@ public class ClassUtils {
     }
 
     /**
+     * Gets the primitive class for the given class name, for example "byte".
+     *
+     * @param className the primitive class for the given class name.
+     * @return the primitive class.
+     */
+    static Class<?> getPrimitiveClass(final String className) {
+        return namePrimitiveMap.get(className);
+    }
+
+    /**
      * Returns the desired Method much like {@code Class.getMethod}, however it ensures that the returned Method is from a
      * public class or interface and not from an anonymous inner class. This means that the Method is invokable and doesn't
      * fall foul of Java bug <a href="https://bugs.java.com/bugdatabase/view_bug.do?bug_id=4071957">4071957</a>).
      *
      * <pre>
-     *  <code>Set set = Collections.unmodifiableSet(...);
+     *  {@code Set set = Collections.unmodifiableSet(...);
      *  Method method = ClassUtils.getPublicMethod(set.getClass(), "isEmpty",  new Class[0]);
-     *  Object result = method.invoke(set, new Object[]);</code>
+     *  Object result = method.invoke(set, new Object[]);}
      * </pre>
      *
      * @param cls the class to check, not null
@@ -1384,12 +1391,8 @@ public class ClassUtils {
         if (!ArrayUtils.isSameLength(classArray, toClassArray)) {
             return false;
         }
-        if (classArray == null) {
-            classArray = ArrayUtils.EMPTY_CLASS_ARRAY;
-        }
-        if (toClassArray == null) {
-            toClassArray = ArrayUtils.EMPTY_CLASS_ARRAY;
-        }
+        classArray = ArrayUtils.nullToEmpty(classArray);
+        toClassArray = ArrayUtils.nullToEmpty(toClassArray);
         for (int i = 0; i < classArray.length; i++) {
             if (!isAssignable(classArray[i], toClassArray[i], autoboxing)) {
                 return false;
@@ -1498,9 +1501,10 @@ public class ClassUtils {
     private static String toCanonicalName(final String className) {
         String canonicalName = StringUtils.deleteWhitespace(className);
         Objects.requireNonNull(canonicalName, "className");
-        if (canonicalName.endsWith("[]")) {
+        final String arrayMarker = "[]";
+        if (canonicalName.endsWith(arrayMarker)) {
             final StringBuilder classNameBuffer = new StringBuilder();
-            while (canonicalName.endsWith("[]")) {
+            while (canonicalName.endsWith(arrayMarker)) {
                 canonicalName = canonicalName.substring(0, canonicalName.length() - 2);
                 classNameBuffer.append("[");
             }
@@ -1572,7 +1576,7 @@ public class ClassUtils {
      * </p>
      *
      * @param classes the class array to convert, may be null or empty
-     * @return an array which contains for each given class, the primitive class or <b>null</b> if the original class is not
+     * @return an array which contains for each given class, the primitive class or <strong>null</strong> if the original class is not
      *         a wrapper class. {@code null} if null input. Empty array if an empty array passed in.
      * @see #wrapperToPrimitive(Class)
      * @since 2.4
@@ -1597,11 +1601,11 @@ public class ClassUtils {
      * <p>
      * This method is the counter part of {@code primitiveToWrapper()}. If the passed in class is a wrapper class for a
      * primitive type, this primitive type will be returned (e.g. {@code Integer.TYPE} for {@code Integer.class}). For other
-     * classes, or if the parameter is <b>null</b>, the return value is <b>null</b>.
+     * classes, or if the parameter is <strong>null</strong>, the return value is <strong>null</strong>.
      * </p>
      *
-     * @param cls the class to convert, may be <b>null</b>
-     * @return the corresponding primitive type if {@code cls} is a wrapper class, <b>null</b> otherwise
+     * @param cls the class to convert, may be <strong>null</strong>
+     * @return the corresponding primitive type if {@code cls} is a wrapper class, <strong>null</strong> otherwise
      * @see #primitiveToWrapper(Class)
      * @since 2.4
      */
@@ -1616,8 +1620,12 @@ public class ClassUtils {
      * <p>
      * This constructor is public to permit tools that require a JavaBean instance to operate.
      * </p>
+     *
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public ClassUtils() {
+        // empty
     }
 
 }

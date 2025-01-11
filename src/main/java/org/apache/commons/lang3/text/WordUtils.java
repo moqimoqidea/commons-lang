@@ -37,7 +37,6 @@ import org.apache.commons.lang3.StringUtils;
 @Deprecated
 public class WordUtils {
 
-    // Capitalizing
     /**
      * Capitalizes all the whitespace separated words in a String.
      * Only the first character of each word is changed. To convert the
@@ -273,11 +272,11 @@ public class WordUtils {
             final char ch = str.charAt(i);
             if (isDelimiter(ch, delimiters)) {
                 lastWasGap = true;
-            } else if (lastWasGap) {
+                continue;  // ignore ch
+            }
+            if (lastWasGap) {
                 buf[count++] = ch;
                 lastWasGap = false;
-            } else {
-                continue; // ignore ch
             }
         }
         return new String(buf, 0, count);
@@ -412,7 +411,7 @@ public class WordUtils {
      * Wraps a single line of text, identifying words by {@code ' '}.
      *
      * <p>New lines will be separated by the system property line separator.
-     * Very long words, such as URLs will <i>not</i> be wrapped.</p>
+     * Very long words, such as URLs will <em>not</em> be wrapped.</p>
      *
      * <p>Leading spaces on a new line are stripped.
      * Trailing spaces are not stripped.</p>
@@ -523,7 +522,7 @@ public class WordUtils {
      *   <td>20</td>
      *   <td>"\n"</td>
      *   <td>true</td>
-     *   <td>"Click here to jump\nto the commons\nwebsite -\nhttp://commons.apach\ne.org"</td>
+     *   <td>"Click here to jump\nto the commons\nwebsite -\nhttps://commons.apach\ne.org"</td>
      *  </tr>
      * </table>
      *
@@ -608,7 +607,7 @@ public class WordUtils {
      *   <td>"\n"</td>
      *   <td>true</td>
      *   <td>" "</td>
-     *   <td>"Click here to jump\nto the commons\nwebsite -\nhttp://commons.apach\ne.org"</td>
+     *   <td>"Click here to jump\nto the commons\nwebsite -\nhttps://commons.apach\ne.org"</td>
      *  </tr>
      *  <tr>
      *   <td>"flammable/inflammable"</td>

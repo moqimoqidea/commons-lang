@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,8 +46,6 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link org.apache.commons.lang3.exception.ExceptionUtils}.
- *
- * @since 1.0
  */
 public class ExceptionUtilsTest extends AbstractLangTest {
 
@@ -206,8 +205,23 @@ public class ExceptionUtilsTest extends AbstractLangTest {
     @Test
     public void testAsRuntimeException() {
         final Exception expected = new InterruptedException();
-        final Exception actual = assertThrows(Exception.class, () -> ExceptionUtils.asRuntimeException(expected));
-        assertSame(expected, actual);
+        assertSame(expected, assertThrows(Exception.class, () -> ExceptionUtils.asRuntimeException(expected)));
+        assertNotSame(expected, assertThrows(Exception.class, () -> ExceptionUtils.asRuntimeException(new InterruptedException())));
+        // API return typed to compile to Object
+        assertThrows(expected.getClass(), () -> {
+            @SuppressWarnings("unused")
+            final Object retVal = ExceptionUtils.asRuntimeException(expected);
+        });
+        // API return typed to compile to RuntimeException
+        assertThrows(expected.getClass(), () -> {
+            @SuppressWarnings("unused")
+            final RuntimeException retVal = ExceptionUtils.asRuntimeException(expected);
+        });
+        // API return typed to compile to RuntimeException subclass
+        assertThrows(expected.getClass(), () -> {
+            @SuppressWarnings("unused")
+            final IllegalStateException retVal = ExceptionUtils.asRuntimeException(expected);
+        });
     }
 
     @Test
@@ -681,7 +695,6 @@ public class ExceptionUtilsTest extends AbstractLangTest {
         ExceptionUtils.printRootCauseStackTrace(null, new PrintStream(out));
         assertEquals(0, out.toString().length());
 
-        out = new ByteArrayOutputStream(1024);
         assertThrows(
                 NullPointerException.class,
                 () -> ExceptionUtils.printRootCauseStackTrace(withCause, (PrintStream) null));
@@ -705,7 +718,6 @@ public class ExceptionUtilsTest extends AbstractLangTest {
         ExceptionUtils.printRootCauseStackTrace(null, new PrintWriter(writer));
         assertEquals(0, writer.getBuffer().length());
 
-        writer = new StringWriter(1024);
         assertThrows(
                 NullPointerException.class,
                 () -> ExceptionUtils.printRootCauseStackTrace(withCause, (PrintWriter) null));
@@ -730,8 +742,24 @@ public class ExceptionUtilsTest extends AbstractLangTest {
     @Test
     public void testRethrow() {
         final Exception expected = new InterruptedException();
-        final Exception actual = assertThrows(Exception.class, () -> ExceptionUtils.rethrow(expected));
-        assertSame(expected, actual);
+        // API return typed to compile to Object
+        assertThrows(expected.getClass(), () -> {
+            @SuppressWarnings("unused")
+            final Object retVal = ExceptionUtils.rethrow(expected);
+        });
+        // API return typed to compile to Object subclass
+        assertThrows(expected.getClass(), () -> {
+            @SuppressWarnings("unused")
+            final String retVal = ExceptionUtils.rethrow(expected);
+        });
+        // API return typed to compile to primitive
+        assertThrows(expected.getClass(), () -> {
+            @SuppressWarnings("unused")
+            final int retVal = ExceptionUtils.rethrow(expected);
+        });
+        //
+        assertSame(expected, assertThrows(expected.getClass(), () -> ExceptionUtils.rethrow(expected)));
+        assertNotSame(expected, assertThrows(expected.getClass(), () -> ExceptionUtils.rethrow(new InterruptedException())));
     }
 
     @Test

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /**
  * Assists in creating consistent {@code equals(Object)}, {@code toString()}, {@code hashCode()}, and {@code compareTo(Object)} methods.
  * These classes are not thread-safe.
@@ -27,7 +28,6 @@
  * @see Object#toString()
  * @see Object#hashCode()
  * @see Comparable#compareTo(Object)
- *
  * @since 1.0
  */
 package org.apache.commons.lang3.builder;

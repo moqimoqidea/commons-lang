@@ -19,7 +19,6 @@ package org.apache.commons.lang3.exception;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
@@ -33,6 +32,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 /**
  * Provides utilities for manipulating and examining
@@ -72,21 +72,26 @@ public class ExceptionUtils {
     static final String WRAPPED_MARKER = " [wrapped] ";
 
     /**
-     * Use to throws a checked exception without adding the exception to the throws
+     * Throws the given (usually checked) exception without adding the exception to the throws
      * clause of the calling method. This method prevents throws clause
-     * pollution and reduces the clutter of "Caused by" exceptions in the
+     * inflation and reduces the clutter of "Caused by" exceptions in the
      * stack trace.
      * <p>
-     * The use of this technique may be controversial, but exceedingly useful to
-     * library developers.
+     * The use of this technique may be controversial, but useful.
      * </p>
      * <pre>
-     *  public int propagateExample { // note that there is no throws clause
+     *  // There is no throws clause in the method signature.
+     *  public int propagateExample {
      *      try {
-     *          return invocation(); // throws IOException
+     *          // Throws IOException
+     *          invocation();
      *      } catch (Exception e) {
-     *          return ExceptionUtils.rethrowRuntimeException(e);  // propagates a checked exception
+     *          // Propagates a checked exception.
+     *          throw ExceptionUtils.asRuntimeException(e);
      *      }
+     *      // more processing
+     *      ...
+     *      return value;
      *  }
      * </pre>
      * <p>
@@ -94,16 +99,23 @@ public class ExceptionUtils {
      * checked exception in a RuntimeException:
      * </p>
      * <pre>
-     *  public int wrapExample { // note that there is no throws clause
+     *  // There is no throws clause in the method signature.
+     *  public int wrapExample() {
      *      try {
-     *          return invocation(); // throws IOException
+     *          // throws IOException.
+     *          invocation();
      *      } catch (Error e) {
      *          throw e;
      *      } catch (RuntimeException e) {
-     *          throw e;  // wraps a checked exception
+     *          // Throws an unchecked exception.
+     *          throw e;
      *      } catch (Exception e) {
-     *          throw new UndeclaredThrowableException(e);  // wraps a checked exception
+     *          // Wraps a checked exception.
+     *          throw new UndeclaredThrowableException(e);
      *      }
+     *      // more processing
+     *      ...
+     *      return value;
      *  }
      * </pre>
      * <p>
@@ -236,17 +248,11 @@ public class ExceptionUtils {
     // TODO: Remove in Lang 4
     private static Throwable getCauseUsingMethodName(final Throwable throwable, final String methodName) {
         if (methodName != null) {
-            Method method = null;
-            try {
-                method = throwable.getClass().getMethod(methodName);
-            } catch (final NoSuchMethodException | SecurityException ignored) {
-                // exception ignored
-            }
-
+            final Method method = MethodUtils.getMethodObject(throwable.getClass(), methodName);
             if (method != null && Throwable.class.isAssignableFrom(method.getReturnType())) {
                 try {
                     return (Throwable) method.invoke(throwable);
-                } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException ignored) {
+                } catch (final ReflectiveOperationException ignored) {
                     // exception ignored
                 }
             }
@@ -433,10 +439,10 @@ public class ExceptionUtils {
      * {@link Throwable} object, decomposing it into a list of
      * stack frames.
      *
-     * <p>The result of this method vary by JDK version as this method
+     * <p>
+     * The result of this method vary by JDK version as this method
      * uses {@link Throwable#printStackTrace(java.io.PrintWriter)}.
-     * On JDK1.3 and earlier, the cause exception will not be shown
-     * unless the specified throwable alters printStackTrace.</p>
+     * </p>
      *
      * @param throwable  the {@link Throwable} to examine, may be null
      * @return an array of strings describing each stack frame, never null
@@ -449,12 +455,12 @@ public class ExceptionUtils {
     }
 
     /**
-     * Gets the stack trace from a Throwable as a String.
+     * Gets the stack trace from a Throwable as a String, including suppressed and cause exceptions.
      *
-     * <p>The result of this method vary by JDK version as this method
+     * <p>
+     * The result of this method vary by JDK version as this method
      * uses {@link Throwable#printStackTrace(java.io.PrintWriter)}.
-     * On JDK1.3 and earlier, the cause exception will not be shown
-     * unless the specified throwable alters printStackTrace.</p>
+     * </p>
      *
      * @param throwable  the {@link Throwable} to be examined, may be null
      * @return the stack trace as generated by the exception's
@@ -710,17 +716,19 @@ public class ExceptionUtils {
     /**
      * Prints a compact stack trace for the root cause of a throwable
      * to {@code System.err}.
-     *
-     * <p>The compact stack trace starts with the root cause and prints
+     * <p>
+     * The compact stack trace starts with the root cause and prints
      * stack frames up to the place where it was caught and wrapped.
      * Then it prints the wrapped exception and continues with stack frames
-     * until the wrapper exception is caught and wrapped again, etc.</p>
-     *
-     * <p>The output of this method is consistent across JDK versions.
-     * Note that this is the opposite order to the JDK1.4 display.</p>
-     *
-     * <p>The method is equivalent to {@code printStackTrace} for throwables
-     * that don't have nested causes.</p>
+     * until the wrapper exception is caught and wrapped again, etc.
+     * </p>
+     * <p>
+     * The output of this method is consistent across JDK versions.
+     * </p>
+     * <p>
+     * The method is equivalent to {@code printStackTrace} for throwables
+     * that don't have nested causes.
+     * </p>
      *
      * @param throwable  the throwable to output
      * @since 2.0
@@ -814,20 +822,22 @@ public class ExceptionUtils {
     }
 
     /**
-     * Use to throw a checked exception without adding the exception to the throws
+     * Throws the given (usually checked) exception without adding the exception to the throws
      * clause of the calling method. This method prevents throws clause
-     * pollution and reduces the clutter of "Caused by" exceptions in the
+     * inflation and reduces the clutter of "Caused by" exceptions in the
      * stack trace.
      * <p>
-     * The use of this technique may be controversial, but exceedingly useful to
-     * library developers.
+     * The use of this technique may be controversial, but useful.
      * </p>
      * <pre>
-     *  public int propagateExample { // note that there is no throws clause
+     *  // There is no throws clause in the method signature.
+     *  public int propagateExample() {
      *      try {
-     *          return invocation(); // throws IOException
-     *      } catch (Exception e) {
-     *          return ExceptionUtils.rethrow(e);  // propagates a checked exception
+     *          // throws SomeCheckedException.
+     *          return invocation();
+     *      } catch (SomeCheckedException e) {
+     *          // Propagates a checked exception and compiles to return an int.
+     *          return ExceptionUtils.rethrow(e);
      *      }
      *  }
      * </pre>
@@ -836,15 +846,19 @@ public class ExceptionUtils {
      * checked exception in a RuntimeException:
      * </p>
      * <pre>
-     *  public int wrapExample { // note that there is no throws clause
+     *  // There is no throws clause in the method signature.
+     *  public int wrapExample() {
      *      try {
-     *          return invocation(); // throws IOException
+     *          // throws IOException.
+     *          return invocation();
      *      } catch (Error e) {
      *          throw e;
      *      } catch (RuntimeException e) {
-     *          throw e;  // wraps a checked exception
+     *          // Throws an unchecked exception.
+     *          throw e;
      *      } catch (Exception e) {
-     *          throw new UndeclaredThrowableException(e);  // wraps a checked exception
+     *          // wraps a checked exception.
+     *          throw new UndeclaredThrowableException(e);
      *      }
      *  }
      * </pre>
@@ -863,16 +877,14 @@ public class ExceptionUtils {
      *
      * @param throwable
      *            The throwable to rethrow.
-     * @param <T> The type of the returned value.
-     * @return Never actually returned, this generic type matches any type
+     * @param <T> The type of the return value.
+     * @return Never actually returns, this generic type matches any type
      *         which the calling site requires. "Returning" the results of this
      *         method, as done in the propagateExample above, will satisfy the
      *         Java compiler requirement that all code paths return a value.
      * @since 3.5
      * @see #wrapAndThrow(Throwable)
-     * @deprecated Use {@link #asRuntimeException(Throwable)}.
      */
-    @Deprecated
     public static <T> T rethrow(final Throwable throwable) {
         // claim that the typeErasure invocation throws a RuntimeException
         return ExceptionUtils.<T, RuntimeException>eraseType(throwable);
@@ -1094,9 +1106,10 @@ public class ExceptionUtils {
      * Public constructor allows an instance of {@link ExceptionUtils} to be created, although that is not
      * normally necessary.
      *
-     * @deprecated Will be private in 3.0.
+     * @deprecated TODO Make private in 4.0.
      */
     @Deprecated
     public ExceptionUtils() {
+        // empty
     }
 }

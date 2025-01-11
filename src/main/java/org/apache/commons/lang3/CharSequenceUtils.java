@@ -41,12 +41,15 @@ public class CharSequenceUtils {
     /**
      * Used by the indexOf(CharSequence methods) as a green implementation of indexOf.
      *
-     * @param cs the {@link CharSequence} to be processed
+     * @param cs         the {@link CharSequence} to be processed
      * @param searchChar the {@link CharSequence} to be searched for
-     * @param start the start index
-     * @return the index where the search sequence was found
+     * @param start      the start index
+     * @return the index where the search sequence was found, or {@code -1} if there is no such occurrence.
      */
     static int indexOf(final CharSequence cs, final CharSequence searchChar, final int start) {
+        if (cs == null || searchChar == null) {
+            return StringUtils.INDEX_NOT_FOUND;
+        }
         if (cs instanceof String) {
             return ((String) cs).indexOf(searchChar.toString(), start);
         }
@@ -77,15 +80,15 @@ public class CharSequenceUtils {
      * object at an index no smaller than {@code start}, then
      * the index of the first such occurrence is returned. For values
      * of {@code searchChar} in the range from 0 to 0xFFFF (inclusive),
-     * this is the smallest value <i>k</i> such that:
+     * this is the smallest value <em>k</em> such that:
      * </p>
      * <blockquote><pre>
-     * (this.charAt(<i>k</i>) == searchChar) &amp;&amp; (<i>k</i> &gt;= start)
+     * (this.charAt(<em>k</em>) == searchChar) &amp;&amp; (<em>k</em> &gt;= start)
      * </pre></blockquote>
      * is true. For other values of {@code searchChar}, it is the
-     * smallest value <i>k</i> such that:
+     * smallest value <em>k</em> such that:
      * <blockquote><pre>
-     * (this.codePointAt(<i>k</i>) == searchChar) &amp;&amp; (<i>k</i> &gt;= start)
+     * (this.codePointAt(<em>k</em>) == searchChar) &amp;&amp; (<em>k</em> &gt;= start)
      * </pre></blockquote>
      * <p>
      * is true. In either case, if no such character occurs inm {@code cs}
@@ -219,14 +222,14 @@ public class CharSequenceUtils {
      * the specified character, searching backward starting at the
      * specified index. For values of {@code searchChar} in the range
      * from 0 to 0xFFFF (inclusive), the index returned is the largest
-     * value <i>k</i> such that:
+     * value <em>k</em> such that:
      * <blockquote><pre>
-     * (this.charAt(<i>k</i>) == searchChar) &amp;&amp; (<i>k</i> &lt;= start)
+     * (this.charAt(<em>k</em>) == searchChar) &amp;&amp; (<em>k</em> &lt;= start)
      * </pre></blockquote>
      * is true. For other values of {@code searchChar}, it is the
-     * largest value <i>k</i> such that:
+     * largest value <em>k</em> such that:
      * <blockquote><pre>
-     * (this.codePointAt(<i>k</i>) == searchChar) &amp;&amp; (<i>k</i> &lt;= start)
+     * (this.codePointAt(<em>k</em>) == searchChar) &amp;&amp; (<em>k</em> &lt;= start)
      * </pre></blockquote>
      * is true. In either case, if no such character occurs in {@code cs}
      * at or before position {@code start}, then {@code -1} is returned.
@@ -290,6 +293,7 @@ public class CharSequenceUtils {
      * @param start the index to start on the {@code substring} CharSequence
      * @param length character length of the region
      * @return whether the region matched
+     * @see String#regionMatches(boolean, int, String, int, int)
      */
     static boolean regionMatches(final CharSequence cs, final boolean ignoreCase, final int thisStart,
             final CharSequence substring, final int start, final int length)    {
@@ -326,7 +330,7 @@ public class CharSequenceUtils {
                 return false;
             }
 
-            // The real same check as in String.regionMatches():
+            // The real same check as in String#regionMatches(boolean, int, String, int, int):
             final char u1 = Character.toUpperCase(c1);
             final char u2 = Character.toUpperCase(c2);
             if (u1 != u2 && Character.toLowerCase(u1) != Character.toLowerCase(u2)) {
@@ -383,7 +387,11 @@ public class CharSequenceUtils {
      *
      * <p>This constructor is public to permit tools that require a JavaBean
      * instance to operate.</p>
+     *
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public CharSequenceUtils() {
+        // empty
     }
 }

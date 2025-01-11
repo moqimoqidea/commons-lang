@@ -90,8 +90,8 @@ public class BackgroundInitializer<T> extends AbstractConcurrentInitializer<T, E
     /**
      * Builds a new instance.
      *
-     * @param <T> the type of the object managed by the initializer.
-     * @param <I> the type of the initializer managed by this builder.
+     * @param <T> The type of results supplied by this builder.
+     * @param <I> The type of the initializer managed by this builder.
      * @since 3.14.0
      */
     public static class Builder<I extends BackgroundInitializer<T>, T> extends AbstractBuilder<I, T, Builder<I, T>, Exception> {
@@ -100,6 +100,13 @@ public class BackgroundInitializer<T> extends AbstractConcurrentInitializer<T, E
          * The external executor service for executing tasks. null is a permitted value.
          */
         private ExecutorService externalExecutor;
+
+        /**
+         * Constructs a new instance.
+         */
+        public Builder() {
+            // empty
+        }
 
         @SuppressWarnings("unchecked")
         @Override
@@ -111,9 +118,8 @@ public class BackgroundInitializer<T> extends AbstractConcurrentInitializer<T, E
          * Sets the external executor service for executing tasks. null is a permitted value.
          *
          * @see org.apache.commons.lang3.concurrent.BackgroundInitializer#setExternalExecutor(ExecutorService)
-         *
          * @param externalExecutor the {@link ExecutorService} to be used.
-         * @return this
+         * @return {@code this} instance.
          */
         public Builder<I, T> setExternalExecutor(final ExecutorService externalExecutor) {
             this.externalExecutor = externalExecutor;
@@ -264,7 +270,7 @@ public class BackgroundInitializer<T> extends AbstractConcurrentInitializer<T, E
     /**
      * Returns the {@link ExecutorService} that is actually used for executing
      * the background task. This method can be called after {@link #start()}
-     * (before {@code start()} it returns <b>null</b>). If an external executor
+     * (before {@code start()} it returns <strong>null</strong>). If an external executor
      * was set, this is also the active executor. Otherwise this method returns
      * the temporary executor that was created by this object.
      *
@@ -318,7 +324,7 @@ public class BackgroundInitializer<T> extends AbstractConcurrentInitializer<T, E
      * {@inheritDoc}
      */
     @Override
-    protected Exception getTypedException(Exception e) {
+    protected Exception getTypedException(final Exception e) {
         //This Exception object will be used for type comparison in AbstractConcurrentInitializer.initialize but not thrown
         return new Exception(e);
     }
@@ -333,7 +339,7 @@ public class BackgroundInitializer<T> extends AbstractConcurrentInitializer<T, E
      */
     @Override
     public synchronized boolean isInitialized() {
-        if (future == null || ! future.isDone() ) {
+        if (future == null || ! future.isDone()) {
             return false;
         }
 
@@ -385,8 +391,8 @@ public class BackgroundInitializer<T> extends AbstractConcurrentInitializer<T, E
      * becomes active and invokes the {@link #initialize()} method in a
      * background task. A {@link BackgroundInitializer} can be started exactly
      * once. The return value of this method determines whether the start was
-     * successful: only the first invocation of this method returns <b>true</b>,
-     * following invocations will return <b>false</b>.
+     * successful: only the first invocation of this method returns <strong>true</strong>,
+     * following invocations will return <strong>false</strong>.
      *
      * @return a flag whether the initializer could be started successfully
      */

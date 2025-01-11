@@ -27,107 +27,123 @@ import java.util.Arrays;
 public final class ArrayFill {
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code byte} value to each element of the array.
      *
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(byte[],byte)
      */
     public static byte[] fill(final byte[] a, final byte val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code char} value to each element of the array.
      *
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(char[],char)
      */
     public static char[] fill(final char[] a, final char val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code double} value to each element of the array.
      *
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(double[],double)
      */
     public static double[] fill(final double[] a, final double val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code float} value to each element of the array.
      *
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(float[],float)
      */
     public static float[] fill(final float[] a, final float val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code int} value to each element of the array.
      *
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(int[],int)
      */
     public static int[] fill(final int[] a, final int val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code long} value to each element of the array.
      *
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(long[],long)
      */
     public static long[] fill(final long[] a, final long val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code short} value to each element of the array.
      *
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(short[],short)
      */
     public static short[] fill(final short[] a, final short val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 
     /**
-     * Fills and returns the given array.
+     * Fills and returns the given array, assigning the given {@code T} value to each element of the array.
      *
      * @param <T> the array type.
-     * @param a   the array to be filled.
+     * @param a   the array to be filled (may be null).
      * @param val the value to be stored in all elements of the array.
      * @return the given array.
      * @see Arrays#fill(Object[],Object)
      */
     public static <T> T[] fill(final T[] a, final T val) {
-        Arrays.fill(a, val);
+        if (a != null) {
+            Arrays.fill(a, val);
+        }
         return a;
     }
 

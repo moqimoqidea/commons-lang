@@ -16,8 +16,6 @@
  */
 package org.apache.commons.lang3;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -51,9 +49,12 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junitpioneer.jupiter.DefaultLocale;
+import org.junitpioneer.jupiter.ReadsDefaultLocale;
+import org.junitpioneer.jupiter.WritesDefaultLocale;
 
 /**
- * Unit tests for methods of {@link org.apache.commons.lang3.StringUtils}
+ * Tests for methods of {@link StringUtils}
  * which been moved to their own test classes.
  */
 @SuppressWarnings("deprecation") // deliberate use of deprecated code
@@ -73,16 +74,16 @@ public class StringUtilsTest extends AbstractLangTest {
         final StringBuilder ntr = new StringBuilder();
         for (int i = 0; i < Character.MAX_VALUE; i++) {
             if (Character.isWhitespace((char) i)) {
-                ws.append(String.valueOf((char) i));
+                ws.append((char) i);
                 if (i > 32) {
-                    ntr.append(String.valueOf((char) i));
+                    ntr.append((char) i);
                 }
             } else if (i < 40) {
-                nws.append(String.valueOf((char) i));
+                nws.append((char) i);
             }
         }
         for (int i = 0; i <= 32; i++) {
-            tr.append(String.valueOf((char) i));
+            tr.append((char) i);
         }
         WHITESPACE = ws.toString();
         NON_WHITESPACE = nws.toString();
@@ -144,7 +145,7 @@ public class StringUtilsTest extends AbstractLangTest {
             assertTrue(actual.indexOf((char) ('a' + offset)) != -1,
                     message + " -- should contain offset character");
         }
-        assertThat(message + " -- should not be greater than maxWidth", actual.length(), lessThanOrEqualTo(maxWidth));
+        assertTrue(actual.length() <= maxWidth, () -> message + " -- should not be greater than maxWidth");
         assertEquals(expected, actual, message);
     }
 
@@ -156,7 +157,7 @@ public class StringUtilsTest extends AbstractLangTest {
             assertTrue(actual.indexOf((char) ('a' + offset)) != -1,
                     message + " -- should contain offset character");
         }
-        assertThat(message + " -- should not be greater than maxWidth", actual.length(), lessThanOrEqualTo(maxWidth));
+        assertTrue(actual.length() <= maxWidth, () -> message + " -- should not be greater than maxWidth");
         assertEquals(expected, actual, message);
     }
 
@@ -438,7 +439,7 @@ public class StringUtilsTest extends AbstractLangTest {
         assertNull(StringUtils.appendIfMissing(null, null, (CharSequence[]) null), "appendIfMissing(null,null,null)");
         assertEquals("abc", StringUtils.appendIfMissing("abc", null, (CharSequence[]) null), "appendIfMissing(abc,null,null)");
         assertEquals("xyz", StringUtils.appendIfMissing("", "xyz", (CharSequence[]) null), "appendIfMissing(\"\",xyz,null))");
-        assertEquals("abcxyz", StringUtils.appendIfMissing("abc", "xyz", null), "appendIfMissing(abc,xyz,{null})");
+        assertEquals("abcxyz", StringUtils.appendIfMissing("abc", "xyz", (CharSequence) null), "appendIfMissing(abc,xyz,{null})");
         assertEquals("abc", StringUtils.appendIfMissing("abc", "xyz", ""), "appendIfMissing(abc,xyz,\"\")");
         assertEquals("abcxyz", StringUtils.appendIfMissing("abc", "xyz", "mno"), "appendIfMissing(abc,xyz,mno)");
         assertEquals("abcxyz", StringUtils.appendIfMissing("abcxyz", "xyz", "mno"), "appendIfMissing(abcxyz,xyz,mno)");
@@ -462,7 +463,7 @@ public class StringUtilsTest extends AbstractLangTest {
         assertNull(StringUtils.appendIfMissingIgnoreCase(null, null, (CharSequence[]) null), "appendIfMissingIgnoreCase(null,null,null)");
         assertEquals("abc", StringUtils.appendIfMissingIgnoreCase("abc", null, (CharSequence[]) null), "appendIfMissingIgnoreCase(abc,null,null)");
         assertEquals("xyz", StringUtils.appendIfMissingIgnoreCase("", "xyz", (CharSequence[]) null), "appendIfMissingIgnoreCase(\"\",xyz,null)");
-        assertEquals("abcxyz", StringUtils.appendIfMissingIgnoreCase("abc", "xyz", null), "appendIfMissingIgnoreCase(abc,xyz,{null})");
+        assertEquals("abcxyz", StringUtils.appendIfMissingIgnoreCase("abc", "xyz", (CharSequence) null), "appendIfMissingIgnoreCase(abc,xyz,{null})");
         assertEquals("abc", StringUtils.appendIfMissingIgnoreCase("abc", "xyz", ""), "appendIfMissingIgnoreCase(abc,xyz,\"\")");
         assertEquals("abcxyz", StringUtils.appendIfMissingIgnoreCase("abc", "xyz", "mno"), "appendIfMissingIgnoreCase(abc,xyz,mno)");
         assertEquals("abcxyz", StringUtils.appendIfMissingIgnoreCase("abcxyz", "xyz", "mno"), "appendIfMissingIgnoreCase(abcxyz,xyz,mno)");
@@ -1367,7 +1368,7 @@ public class StringUtilsTest extends AbstractLangTest {
         assertEquals("", StringUtils.join(EMPTY_STRING_LIST, null));
         assertEquals("", StringUtils.join(EMPTY_STRING_LIST, ""));
 
-        assertEquals("", StringUtils.join(MIXED_STRING_LIST, "", 0, MIXED_STRING_LIST.size()- 1));
+        assertEquals("", StringUtils.join(MIXED_STRING_LIST, "", 0, MIXED_STRING_LIST.size() - 1));
     }
 
     @ParameterizedTest
@@ -1603,7 +1604,7 @@ public class StringUtilsTest extends AbstractLangTest {
         assertNull(StringUtils.prependIfMissing(null, null, (CharSequence[]) null), "prependIfMissing(null,null null)");
         assertEquals("abc", StringUtils.prependIfMissing("abc", null, (CharSequence[]) null), "prependIfMissing(abc,null,null)");
         assertEquals("xyz", StringUtils.prependIfMissing("", "xyz", (CharSequence[]) null), "prependIfMissing(\"\",xyz,null)");
-        assertEquals("xyzabc", StringUtils.prependIfMissing("abc", "xyz", null), "prependIfMissing(abc,xyz,{null})");
+        assertEquals("xyzabc", StringUtils.prependIfMissing("abc", "xyz", (CharSequence) null), "prependIfMissing(abc,xyz,{null})");
         assertEquals("abc", StringUtils.prependIfMissing("abc", "xyz", ""), "prependIfMissing(abc,xyz,\"\")");
         assertEquals("xyzabc", StringUtils.prependIfMissing("abc", "xyz", "mno"), "prependIfMissing(abc,xyz,mno)");
         assertEquals("xyzabc", StringUtils.prependIfMissing("xyzabc", "xyz", "mno"), "prependIfMissing(xyzabc,xyz,mno)");
@@ -1627,7 +1628,7 @@ public class StringUtilsTest extends AbstractLangTest {
         assertNull(StringUtils.prependIfMissingIgnoreCase(null, null, (CharSequence[]) null), "prependIfMissingIgnoreCase(null,null null)");
         assertEquals("abc", StringUtils.prependIfMissingIgnoreCase("abc", null, (CharSequence[]) null), "prependIfMissingIgnoreCase(abc,null,null)");
         assertEquals("xyz", StringUtils.prependIfMissingIgnoreCase("", "xyz", (CharSequence[]) null), "prependIfMissingIgnoreCase(\"\",xyz,null)");
-        assertEquals("xyzabc", StringUtils.prependIfMissingIgnoreCase("abc", "xyz", null), "prependIfMissingIgnoreCase(abc,xyz,{null})");
+        assertEquals("xyzabc", StringUtils.prependIfMissingIgnoreCase("abc", "xyz", (CharSequence) null), "prependIfMissingIgnoreCase(abc,xyz,{null})");
         assertEquals("abc", StringUtils.prependIfMissingIgnoreCase("abc", "xyz", ""), "prependIfMissingIgnoreCase(abc,xyz,\"\")");
         assertEquals("xyzabc", StringUtils.prependIfMissingIgnoreCase("abc", "xyz", "mno"), "prependIfMissingIgnoreCase(abc,xyz,mno)");
         assertEquals("xyzabc", StringUtils.prependIfMissingIgnoreCase("xyzabc", "xyz", "mno"), "prependIfMissingIgnoreCase(xyzabc,xyz,mno)");
@@ -1990,7 +1991,53 @@ public class StringUtilsTest extends AbstractLangTest {
         assertEquals("aba", StringUtils.replaceEachRepeatedly("aba", new String[]{null}, new String[]{"a"}));
         assertEquals("wcte", StringUtils.replaceEachRepeatedly("abcde", new String[]{"ab", "d"}, new String[]{"w", "t"}));
         assertEquals("tcte", StringUtils.replaceEachRepeatedly("abcde", new String[]{"ab", "d"}, new String[]{"d", "t"}));
-        assertEquals("blaan", StringUtils.replaceEachRepeatedly("blllaan", new String[]{"llaan"}, new String[]{"laan"}) );
+
+        // Test recursive replacement - LANG-1528 & LANG-1753
+        assertEquals("blaan", StringUtils.replaceEachRepeatedly("blllaan", new String[]{"llaan"}, new String[]{"laan"}));
+        assertEquals("blaan", StringUtils.replaceEachRepeatedly("bllllaan", new String[]{"llaan"}, new String[]{"laan"}));
+
+        // Test default TTL for smaller search lists. 32 characters reduced to 16, then 8, 4, 2, 1.
+        assertEquals("a", StringUtils.replaceEachRepeatedly("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                new String[]{"aa"}, new String[]{"a"}));
+
+        // Test default TTL exceeded. 33 characters reduced to 17, then 9, 5, 3, 2 (still found).
+        assertThrows(
+                IllegalStateException.class,
+                () -> StringUtils.replaceEachRepeatedly("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    new String[]{"aa"}, new String[]{"a"}),
+               "Cannot be resolved within the default time-to-live limit");
+
+        // Test larger TTL for larger search lists. Replace repeatedly until there are no more possible replacements.
+        assertEquals("000000000", StringUtils.replaceEachRepeatedly("aA0aA0aA0",
+                new String[]{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
+                        "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D",
+                        "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                        "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9"},
+                new String[]{"b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
+                        "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E",
+                        "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
+                        "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}));
+
+        // Test long infinite cycle: a -> b -> ... -> 9 -> 0 -> a -> b -> ...
+        assertThrows(
+                IllegalStateException.class,
+                () -> StringUtils.replaceEachRepeatedly("a",
+                    new String[]{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
+                            "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D",
+                            "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+                            "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"},
+                    new String[]{"b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
+                            "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E",
+                            "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
+                            "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "a"}),
+                "Should be a circular reference");
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> StringUtils.replaceEachRepeatedly("%{key1}",
+                    new String[] {"%{key1}", "%{key2}", "%{key3}"},
+                    new String[] {"Key1 %{key2}", "Key2 %{key3}", "Key3 %{key1}"}),
+                "Should be a circular reference");
 
         assertThrows(
                 IllegalStateException.class,
@@ -3043,6 +3090,8 @@ public class StringUtilsTest extends AbstractLangTest {
     }
 
     @Test
+    @ReadsDefaultLocale
+    @WritesDefaultLocale
     public void testToRootLowerCase() {
         assertNull(StringUtils.toRootLowerCase(null));
         assertEquals("a", StringUtils.toRootLowerCase("A"));
@@ -3052,17 +3101,18 @@ public class StringUtilsTest extends AbstractLangTest {
         assertNotEquals("title", "TITLE".toLowerCase(TURKISH));
         assertEquals("title", "TITLE".toLowerCase(Locale.ROOT));
         assertEquals("title", StringUtils.toRootLowerCase("TITLE"));
-        // Make sure we are not using the default Locale:
-        final Locale defaultLocale = Locale.getDefault();
-        try {
-            Locale.setDefault(TURKISH);
-            assertEquals("title", StringUtils.toRootLowerCase("TITLE"));
-        } finally {
-            Locale.setDefault(defaultLocale);
-        }
     }
 
     @Test
+    @DefaultLocale("tr")
+    @ReadsDefaultLocale
+    public void testToRootLowerCaseTurkish() {
+        assertEquals("title", StringUtils.toRootLowerCase("TITLE"));
+    }
+
+    @Test
+    @ReadsDefaultLocale
+    @WritesDefaultLocale
     public void testToRootUpperCase() {
         assertNull(StringUtils.toRootUpperCase(null));
         assertEquals("A", StringUtils.toRootUpperCase("a"));

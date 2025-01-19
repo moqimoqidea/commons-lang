@@ -26,14 +26,14 @@ import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link FormattableUtils}.
+ * Tests {@link FormattableUtils}.
  */
 @Deprecated
 public class FormattableUtilsTest extends AbstractLangTest {
 
     @Test
     public void testAlternatePadCharacter() {
-        final char pad='_';
+        final char pad = '_';
         assertEquals("foo", FormattableUtils.append("foo", new Formatter(), 0, -1, -1, pad).toString());
         assertEquals("fo", FormattableUtils.append("foo", new Formatter(), 0, -1, 2, pad).toString());
         assertEquals("_foo", FormattableUtils.append("foo", new Formatter(), 0, 4, -1, pad).toString());

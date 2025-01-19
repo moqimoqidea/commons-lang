@@ -19,6 +19,7 @@ package org.apache.commons.lang3.reflect;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -52,7 +53,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests FieldUtils
+ * Tests FieldUtils
  */
 public class FieldUtilsTest extends AbstractLangTest {
 
@@ -83,7 +84,7 @@ public class FieldUtilsTest extends AbstractLangTest {
             FieldUtils.removeFinalModifier(field, forceAccess);
         } catch (final UnsupportedOperationException exception) {
             if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_12)) {
-                assertTrue(exception.getCause() instanceof NoSuchFieldException);
+                assertInstanceOf(NoSuchFieldException.class, exception.getCause());
             } else {
                 fail("No exception should be thrown for java prior to 12.0");
             }
@@ -577,7 +578,7 @@ public class FieldUtilsTest extends AbstractLangTest {
         assertThrows(IllegalArgumentException.class, () -> FieldUtils.readField(publicChild, "b"));
 
         assertEquals(Boolean.TRUE, FieldUtils.readField(publiclyShadowedChild, "b"));
-        assertThrows( IllegalArgumentException.class, () -> FieldUtils.readField(privatelyShadowedChild, "b"));
+        assertThrows(IllegalArgumentException.class, () -> FieldUtils.readField(privatelyShadowedChild, "b"));
         assertThrows(IllegalArgumentException.class, () -> FieldUtils.readField(publicChild, "i"));
         assertEquals(I1, FieldUtils.readField(publiclyShadowedChild, "i"));
         assertThrows(IllegalArgumentException.class, () -> FieldUtils.readField(privatelyShadowedChild, "i"));

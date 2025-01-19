@@ -29,6 +29,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.builder.Builder;
 
 /**
@@ -122,7 +123,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
             if (!ready()) {
                 return -1;
             }
-            return StrBuilder.this.charAt(pos++);
+            return charAt(pos++);
         }
 
         /** {@inheritDoc} */
@@ -135,11 +136,11 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
             if (len == 0) {
                 return 0;
             }
-            if (pos >= StrBuilder.this.size()) {
+            if (pos >= size()) {
                 return -1;
             }
             if (pos + len > size()) {
-                len = StrBuilder.this.size() - pos;
+                len = size() - pos;
             }
             StrBuilder.this.getChars(pos, pos + len, b, off);
             pos += len;
@@ -149,7 +150,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
         /** {@inheritDoc} */
         @Override
         public boolean ready() {
-            return pos < StrBuilder.this.size();
+            return pos < size();
         }
 
         /** {@inheritDoc} */
@@ -161,8 +162,8 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
         /** {@inheritDoc} */
         @Override
         public long skip(long n) {
-            if (pos + n > StrBuilder.this.size()) {
-                n = StrBuilder.this.size() - pos;
+            if (pos + n > size()) {
+                n = size() - pos;
             }
             if (n < 0) {
                 return 0;
@@ -272,7 +273,9 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
     /** Current size of the buffer. */
     protected int size; // TODO make private?
 
-    /** The new line. */
+    /**
+     * The new line, {@code null} means use the system default from {@link System#lineSeparator()}.
+     */
     private String newLine;
 
     /** The null text. */
@@ -1142,14 +1145,18 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
     }
 
     /**
-     * Appends the new line string to this string builder.
+     * Appends this builder's new line string to this builder.
      * <p>
-     * The new line string can be altered using {@link #setNewLineText(String)}.
-     * This might be used to force the output to always use Unix line endings
-     * even when on Windows.
+     * By default, the new line is the system default from {@link System#lineSeparator()}.
+     * </p>
+     * <p>
+     * The new line string can be changed using {@link #setNewLineText(String)}. For example, you can use this to force the output to always use Unix line
+     * endings even when on Windows.
      * </p>
      *
-     * @return this, to enable chaining
+     * @return {@code this} instance.
+     * @see #getNewLineText()
+     * @see #setNewLineText(String)
      */
     public StrBuilder appendNewLine() {
         if (newLine == null)  {
@@ -1242,10 +1249,11 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      * This method is useful for adding a separator each time around the
      * loop except the first.
      * </p>
-     * <pre>
-     * for (int i = 0; i &lt; list.size(); i++) {
+     * <pre>{@code
+     * for (int i = 0; i < list.size(); i++) {
      *   appendSeparator(",", i);
      *   append(list.get(i));
+     * }
      * }
      * </pre>
      * Note that for this simple example, you should use
@@ -1298,12 +1306,12 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      * This method is useful for adding a separator each time around the
      * loop except the first.
      * </p>
-     * <pre>
-     * for (int i = 0; i &lt; list.size(); i++) {
+     * <pre>{@code
+     * for (int i = 0; i < list.size(); i++) {
      *   appendSeparator(",", i);
      *   append(list.get(i));
      * }
-     * </pre>
+     * }</pre>
      * Note that for this simple example, you should use
      * {@link #appendWithSeparators(Iterable, String)}.
      *
@@ -1364,7 +1372,6 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      *
      * @param appendable  the appendable to append data to
      * @throws IOException  if an I/O error occurs
-     *
      * @since 3.4
      * @see #readFrom(Readable)
      */
@@ -1832,9 +1839,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      */
     public StrBuilder ensureCapacity(final int capacity) {
         if (capacity > buffer.length) {
-            final char[] old = buffer;
-            buffer = new char[capacity * 2];
-            System.arraycopy(old, 0, buffer, 0, size);
+            buffer = ArrayUtils.arraycopy(buffer, 0, 0, size, () -> new char[capacity * 2]);
         }
         return this;
     }
@@ -1915,8 +1920,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
         if (destination == null || destination.length < len) {
             destination = new char[len];
         }
-        System.arraycopy(buffer, 0, destination, 0, len);
-        return destination;
+        return ArrayUtils.arraycopy(buffer, 0, destination, 0, len);
     }
 
     /**
@@ -1943,9 +1947,9 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
     }
 
     /**
-     * Gets the text to be appended when a new line is added.
+     * Gets the text to be appended when a {@link #appendNewLine() new line} is added.
      *
-     * @return the new line text, null means use system default
+     * @return The new line text, {@code null} means use the system default from {@link System#lineSeparator()}.
      */
     public String getNewLineText() {
         return newLine;
@@ -2031,7 +2035,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      * @return the first index of the string, or -1 if not found
      */
     public int indexOf(final String str, final int startIndex) {
-        return StringUtils.indexOf(this, str, startIndex);
+        return Strings.CS.indexOf(this, str, startIndex);
     }
 
     /**
@@ -2353,7 +2357,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      * @return the last index of the string, or -1 if not found
      */
     public int lastIndexOf(final String str, final int startIndex) {
-        return StringUtils.lastIndexOf(this, str, startIndex);
+        return Strings.CS.lastIndexOf(this, str, startIndex);
     }
 
     /**
@@ -2469,9 +2473,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      */
     public StrBuilder minimizeCapacity() {
         if (buffer.length > length()) {
-            final char[] old = buffer;
-            buffer = new char[length()];
-            System.arraycopy(old, 0, buffer, 0, size);
+            buffer = ArrayUtils.arraycopy(buffer, 0, 0, size, () -> new char[length()]);
         }
         return this;
     }
@@ -2483,7 +2485,6 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      * @param readable  object to read from
      * @return the number of characters read
      * @throws IOException if an I/O error occurs.
-     *
      * @since 3.4
      * @see #appendTo(Appendable)
      */
@@ -2816,10 +2817,10 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
     }
 
     /**
-     * Sets the text to be appended when a new line is added.
+     * Sets the text to be appended when {@link #appendNewLine() new line} is called.
      *
-     * @param newLine  the new line text, null means use system default
-     * @return this, to enable chaining
+     * @param newLine the new line text, {@code null} means use the system default from {@link System#lineSeparator()}.
+     * @return {@code this} instance.
      */
     public StrBuilder setNewLineText(final String newLine) {
         this.newLine = newLine;
@@ -2938,9 +2939,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
         if (size == 0) {
             return ArrayUtils.EMPTY_CHAR_ARRAY;
         }
-        final char[] chars = new char[size];
-        System.arraycopy(buffer, 0, chars, 0, size);
-        return chars;
+        return ArrayUtils.arraycopy(buffer, 0, 0, size, char[]::new);
     }
 
     /**
@@ -2959,9 +2958,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
         if (len == 0) {
             return ArrayUtils.EMPTY_CHAR_ARRAY;
         }
-        final char[] chars = new char[len];
-        System.arraycopy(buffer, startIndex, chars, 0, len);
-        return chars;
+        return ArrayUtils.arraycopy(buffer, startIndex, 0, len, char[]::new);
     }
 
     /**

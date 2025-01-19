@@ -40,7 +40,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link org.apache.commons.lang3.text.StrBuilder}.
+ * Tests for {@link org.apache.commons.lang3.text.StrBuilder}.
  */
 @Deprecated
 public class StrBuilderTest extends AbstractLangTest {
@@ -146,38 +146,39 @@ public class StrBuilderTest extends AbstractLangTest {
     @Test
     public void testAsReader() throws Exception {
         final StrBuilder sb = new StrBuilder("some text");
-        Reader reader = sb.asReader();
-        assertTrue(reader.ready());
-        final char[] buf = new char[40];
-        assertEquals(9, reader.read(buf));
-        assertEquals("some text", new String(buf, 0, 9));
+        try (Reader reader = sb.asReader()) {
+            assertTrue(reader.ready());
+            final char[] buf = new char[40];
+            assertEquals(9, reader.read(buf));
+            assertEquals("some text", new String(buf, 0, 9));
 
-        assertEquals(-1, reader.read());
-        assertFalse(reader.ready());
-        assertEquals(0, reader.skip(2));
-        assertEquals(0, reader.skip(-1));
+            assertEquals(-1, reader.read());
+            assertFalse(reader.ready());
+            assertEquals(0, reader.skip(2));
+            assertEquals(0, reader.skip(-1));
 
-        assertTrue(reader.markSupported());
-        reader = sb.asReader();
-        assertEquals('s', reader.read());
-        reader.mark(-1);
+            assertTrue(reader.markSupported());
+        }
         char[] array = new char[3];
-        assertEquals(3, reader.read(array, 0, 3));
-        assertEquals('o', array[0]);
-        assertEquals('m', array[1]);
-        assertEquals('e', array[2]);
-        reader.reset();
-        assertEquals(1, reader.read(array, 1, 1));
-        assertEquals('o', array[0]);
-        assertEquals('o', array[1]);
-        assertEquals('e', array[2]);
-        assertEquals(2, reader.skip(2));
-        assertEquals(' ', reader.read());
+        try (Reader reader = sb.asReader()) {
+            assertEquals('s', reader.read());
+            reader.mark(-1);
+            assertEquals(3, reader.read(array, 0, 3));
+            assertEquals('o', array[0]);
+            assertEquals('m', array[1]);
+            assertEquals('e', array[2]);
+            reader.reset();
+            assertEquals(1, reader.read(array, 1, 1));
+            assertEquals('o', array[0]);
+            assertEquals('o', array[1]);
+            assertEquals('e', array[2]);
+            assertEquals(2, reader.skip(2));
+            assertEquals(' ', reader.read());
 
-        assertTrue(reader.ready());
-        reader.close();
-        assertTrue(reader.ready());
-
+            assertTrue(reader.ready());
+            reader.close();
+            assertTrue(reader.ready());
+        }
         try (Reader r = sb.asReader()) {
             final char[] arr = new char[3];
             assertThrows(IndexOutOfBoundsException.class, () -> r.read(arr, -1, 0));
@@ -665,19 +666,19 @@ public class StrBuilderTest extends AbstractLangTest {
         assertTrue(sb1.equals(sb2));
         assertTrue(sb1.equals(sb1));
         assertTrue(sb2.equals(sb2));
-        assertEquals(sb1, (Object) sb2);
+        assertEquals(sb1, sb2);
 
         sb1.append("abc");
         assertFalse(sb1.equals(sb2));
-        assertNotEquals(sb1, (Object) sb2);
+        assertNotEquals(sb1, sb2);
 
         sb2.append("ABC");
         assertFalse(sb1.equals(sb2));
-        assertNotEquals(sb1, (Object) sb2);
+        assertNotEquals(sb1, sb2);
 
         sb2.clear().append("abc");
         assertTrue(sb1.equals(sb2));
-        assertEquals(sb1, (Object) sb2);
+        assertEquals(sb1, sb2);
 
         assertNotEquals(sb1, Integer.valueOf(1));
         assertNotEquals("abc", sb1);
@@ -707,7 +708,7 @@ public class StrBuilderTest extends AbstractLangTest {
     }
 
     @Test
-    public void testGetChars ( ) {
+    public void testGetChars () {
         final StrBuilder sb = new StrBuilder();
 
         char[] input = new char[10];
@@ -735,7 +736,7 @@ public class StrBuilderTest extends AbstractLangTest {
     }
 
     @Test
-    public void testGetCharsIntIntCharArrayInt( ) {
+    public void testGetCharsIntIntCharArrayInt() {
         final StrBuilder sb = new StrBuilder();
 
         sb.append("junit");

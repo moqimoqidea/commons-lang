@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link org.apache.commons.lang3.StringUtils} - Substring methods
+ * Tests {@link StringUtils} - Substring methods
  */
 public class StringUtilsSubstringTest extends AbstractLangTest {
     private static final String FOO = "foo";
@@ -317,7 +317,7 @@ public void testSubstringBetween_StringString() {
         assertNull(StringUtils.substringBetween("foo", "", "]"));
         assertNull(StringUtils.substringBetween("foo", "[", "]"));
         assertEquals("", StringUtils.substringBetween("    ", " ", "  "));
-        assertEquals("bar", StringUtils.substringBetween("<foo>bar</foo>", "<foo>", "</foo>") );
+        assertEquals("bar", StringUtils.substringBetween("<foo>bar</foo>", "<foo>", "</foo>"));
         assertEquals("abc", StringUtils.substringBetween("yabczyabcz", "y", "z"));
     }
 

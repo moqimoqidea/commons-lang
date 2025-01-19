@@ -19,8 +19,6 @@
 
 package org.apache.commons.lang3;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,10 +39,11 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.ThreadUtils.ThreadGroupPredicate;
 import org.apache.commons.lang3.ThreadUtils.ThreadPredicate;
+import org.apache.commons.lang3.function.Predicates;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link org.apache.commons.lang3.ThreadUtils}.
+ * Tests {@link ThreadUtils}.
  */
 public class ThreadUtilsTest extends AbstractLangTest {
 
@@ -123,9 +122,9 @@ public class ThreadUtilsTest extends AbstractLangTest {
             for (final Thread thread : threads) {
                 thread.start();
             }
-            assertThat("getAllThreadGroups", ThreadUtils.getAllThreadGroups().size(), greaterThanOrEqualTo(7));
-            assertThat("getAllThreads", ThreadUtils.getAllThreads().size(), greaterThanOrEqualTo(11));
-            assertThat("findThreads(ThreadUtils.ALWAYS_TRUE_PREDICATE)", ThreadUtils.findThreads(ThreadUtils.ALWAYS_TRUE_PREDICATE).size(), greaterThanOrEqualTo(11));
+            assertTrue(ThreadUtils.getAllThreadGroups().size() >= 7, "getAllThreadGroups");
+            assertTrue(ThreadUtils.getAllThreads().size() >= 11, "getAllThreads");
+            assertTrue(ThreadUtils.findThreads(Predicates.truePredicate()).size() >= 11, "findThreads(ThreadUtils.truePredicate())");
             assertEquals(1, ThreadUtils.findThreadsByName(t4.getName(), threadGroup3.getName()).size());
             assertEquals(0, ThreadUtils.findThreadsByName(t4.getName(), threadGroup2.getName()).size());
             assertEquals(2, ThreadUtils.findThreadsByName(t11.getName(), threadGroup7.getName()).size());
@@ -152,17 +151,29 @@ public class ThreadUtilsTest extends AbstractLangTest {
         assertFalse(Modifier.isFinal(ThreadUtils.class.getModifiers()));
     }
 
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testDepreacted() {
+        assertNotNull(ThreadUtils.ALWAYS_TRUE_PREDICATE);
+        ThreadPredicate tp = ThreadUtils.ALWAYS_TRUE_PREDICATE;
+        assertTrue(tp.test(null));
+        assertTrue(tp.test(new Thread()));
+        ThreadGroupPredicate tgp = ThreadUtils.ALWAYS_TRUE_PREDICATE;
+        assertTrue(tgp.test(null));
+        assertTrue(tgp.test(new ThreadGroup("")));
+    }
+
     @Test
     public void testGetAllThreadGroupsDoesNotReturnNull() {
         // LANG-1706 getAllThreadGroups and findThreadGroups should not return null items
-        Collection<ThreadGroup> threads = ThreadUtils.getAllThreadGroups();
+        final Collection<ThreadGroup> threads = ThreadUtils.getAllThreadGroups();
         assertEquals(0, threads.stream().filter(Objects::isNull).count());
     }
 
     @Test
     public void testGetAllThreadsDoesNotReturnNull() {
         // LANG-1706 getAllThreads and findThreads should not return null items
-        Collection<Thread> threads = ThreadUtils.getAllThreads();
+        final Collection<Thread> threads = ThreadUtils.getAllThreads();
         assertEquals(0, threads.stream().filter(Objects::isNull).count());
     }
 
@@ -299,8 +310,8 @@ public class ThreadUtilsTest extends AbstractLangTest {
 
     @Test
     public void testThreadGroupsNullParent() {
-        assertThrows(NullPointerException.class, () -> ThreadUtils.findThreadGroups(null, true, ThreadUtils.ALWAYS_TRUE_PREDICATE));
-        assertThrows(NullPointerException.class, () -> ThreadUtils.findThreadGroups(null, false, ThreadUtils.ALWAYS_TRUE_PREDICATE));
+        assertThrows(NullPointerException.class, () -> ThreadUtils.findThreadGroups(null, true, Predicates.truePredicate()));
+        assertThrows(NullPointerException.class, () -> ThreadUtils.findThreadGroups(null, false, Predicates.truePredicate()));
     }
 
     @Test

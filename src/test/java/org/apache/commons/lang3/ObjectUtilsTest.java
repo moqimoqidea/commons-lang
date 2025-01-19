@@ -19,6 +19,7 @@ package org.apache.commons.lang3;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -54,7 +55,7 @@ import org.apache.commons.lang3.text.StrBuilder;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link org.apache.commons.lang3.ObjectUtils}.
+ * Tests {@link ObjectUtils}.
  */
 @SuppressWarnings("deprecation") // deliberate use of deprecated code
 public class ObjectUtilsTest extends AbstractLangTest {
@@ -286,6 +287,8 @@ public class ObjectUtilsTest extends AbstractLangTest {
     public void testCloneOfUncloneable() {
         final UncloneableString string = new UncloneableString("apache");
         final CloneFailedException e = assertThrows(CloneFailedException.class, () -> ObjectUtils.clone(string));
+        assertNotNull(e);
+        assertNotNull(e.getCause());
         assertEquals(NoSuchMethodException.class, e.getCause().getClass());
     }
 
@@ -480,6 +483,7 @@ public class ObjectUtilsTest extends AbstractLangTest {
     @Test
     public void testGetFirstNonNull() {
         // first non-null
+        assertEquals("", ObjectUtils.getFirstNonNull(null, () -> ""));
         assertEquals("", ObjectUtils.getFirstNonNull(Suppliers.nul(), () -> ""));
         // first encountered value is used
         assertEquals("1", ObjectUtils.getFirstNonNull(Suppliers.nul(), () -> "1", () -> "2", Suppliers.nul()));
@@ -563,7 +567,7 @@ public class ObjectUtilsTest extends AbstractLangTest {
 
         assertThrows(
                 NullPointerException.class,
-                () -> ObjectUtils.identityToString((Appendable) (new StringBuilder()), null));
+                () -> ObjectUtils.identityToString((Appendable) new StringBuilder(), null));
     }
 
     @Test
@@ -789,7 +793,7 @@ public class ObjectUtilsTest extends AbstractLangTest {
     public void testNull() {
         assertNotNull(ObjectUtils.NULL);
         // 1 Check that NULL really is a Null i.e. the definition has not been changed
-        assertTrue(ObjectUtils.NULL instanceof ObjectUtils.Null);
+        assertInstanceOf(ObjectUtils.Null.class, ObjectUtils.NULL);
         assertSame(ObjectUtils.NULL, SerializationUtils.clone(ObjectUtils.NULL));
     }
 
@@ -818,8 +822,9 @@ public class ObjectUtilsTest extends AbstractLangTest {
     @Test
     public void testPossibleCloneOfUncloneable() {
         final UncloneableString string = new UncloneableString("apache");
-        final CloneFailedException e = assertThrows(CloneFailedException.class,
-                () -> ObjectUtils.cloneIfPossible(string));
+        final CloneFailedException e = assertThrows(CloneFailedException.class, () -> ObjectUtils.cloneIfPossible(string));
+        assertNotNull(e);
+        assertNotNull(e.getCause());
         assertEquals(NoSuchMethodException.class, e.getCause().getClass());
     }
 
@@ -837,14 +842,14 @@ public class ObjectUtilsTest extends AbstractLangTest {
 
     @Test
     public void testToString_Object() {
-        assertEquals("", ObjectUtils.toString(null) );
-        assertEquals(Boolean.TRUE.toString(), ObjectUtils.toString(Boolean.TRUE) );
+        assertEquals("", ObjectUtils.toString(null));
+        assertEquals(Boolean.TRUE.toString(), ObjectUtils.toString(Boolean.TRUE));
     }
 
     @Test
     public void testToString_Object_String() {
-        assertEquals(BAR, ObjectUtils.toString(null, BAR) );
-        assertEquals(Boolean.TRUE.toString(), ObjectUtils.toString(Boolean.TRUE, BAR) );
+        assertEquals(BAR, ObjectUtils.toString(null, BAR));
+        assertEquals(Boolean.TRUE.toString(), ObjectUtils.toString(Boolean.TRUE, BAR));
     }
 
     @Test

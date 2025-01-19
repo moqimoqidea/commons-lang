@@ -17,9 +17,9 @@
 package org.apache.commons.lang3;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
@@ -413,14 +413,14 @@ public class Validate {
      *
      * <pre>Validate.isAssignableFrom(SuperClass.class, object.getClass());</pre>
      *
-     * <p>The message of the exception is &quot;The validated object can not be converted to the&quot;
+     * <p>The message of the exception is &quot;The validated object cannot be converted to the&quot;
      * followed by the name of the class and &quot;class&quot;</p>
      *
      * @param superType  the class must be validated against, not null
      * @param type  the class to check, not null
      * @param message  the {@link String#format(String, Object...)} exception message if invalid, not null
      * @param values  the optional values for the formatted exception message, null array not recommended
-     * @throws IllegalArgumentException if argument can not be converted to the specified class
+     * @throws IllegalArgumentException if argument cannot be converted to the specified class
      * @see #isAssignableFrom(Class, Class)
      */
     public static void isAssignableFrom(final Class<?> superType, final Class<?> type, final String message, final Object... values) {
@@ -556,8 +556,8 @@ public class Validate {
      * validating according to an arbitrary boolean expression, such as validating a
      * primitive number or using your own custom validation expression.
      *
-     * <pre>
-     * Validate.isTrue(i &gt;= min &amp;&amp; i &lt;= max, "The value must be between &#37;d and &#37;d", min, max);</pre>
+     * <pre>{@code
+     * Validate.isTrue(i >= min &amp;&amp; i <= max, "The value must be between %d and %d", min, max);}</pre>
      *
      * @param expression  the boolean expression to check
      * @param message  the {@link String#format(String, Object...)} exception message if invalid, not null
@@ -667,13 +667,12 @@ public class Validate {
      */
     public static <T extends Iterable<?>> T noNullElements(final T iterable, final String message, final Object... values) {
         Objects.requireNonNull(iterable, "iterable");
-        int i = 0;
-        for (final Iterator<?> it = iterable.iterator(); it.hasNext(); i++) {
-            if (it.next() == null) {
-                final Object[] values2 = ArrayUtils.addAll(values, Integer.valueOf(i));
-                throw new IllegalArgumentException(getMessage(message, values2));
+        final AtomicInteger ai = new AtomicInteger();
+        iterable.forEach(e -> {
+            if (e == null) {
+                throw new IllegalArgumentException(getMessage(message, ArrayUtils.addAll(values, ai.getAndIncrement())));
             }
-        }
+        });
         return iterable;
     }
 

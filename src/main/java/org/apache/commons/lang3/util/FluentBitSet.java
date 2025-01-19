@@ -65,12 +65,12 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Performs a logical <b>AND</b> of this target bit set with the argument bit set. This bit set is modified so that each
+     * Performs a logical <strong>AND</strong> of this target bit set with the argument bit set. This bit set is modified so that each
      * bit in it has the value {@code true} if and only if it both initially had the value {@code true} and the
      * corresponding bit in the bit set argument also had the value {@code true}.
      *
      * @param set a bit set.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet and(final BitSet set) {
         bitSet.and(set);
@@ -78,12 +78,12 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Performs a logical <b>AND</b> of this target bit set with the argument bit set. This bit set is modified so that each
+     * Performs a logical <strong>AND</strong> of this target bit set with the argument bit set. This bit set is modified so that each
      * bit in it has the value {@code true} if and only if it both initially had the value {@code true} and the
      * corresponding bit in the bit set argument also had the value {@code true}.
      *
      * @param set a bit set.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet and(final FluentBitSet set) {
         bitSet.and(set.bitSet);
@@ -94,7 +94,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * Clears all of the bits in this {@link BitSet} whose corresponding bit is set in the specified {@link BitSet}.
      *
      * @param set the {@link BitSet} with which to mask this {@link BitSet}.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet andNot(final BitSet set) {
         bitSet.andNot(set);
@@ -105,7 +105,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * Clears all of the bits in this {@link BitSet} whose corresponding bit is set in the specified {@link BitSet}.
      *
      * @param set the {@link BitSet} with which to mask this {@link BitSet}.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet andNot(final FluentBitSet set) {
         this.bitSet.andNot(set.bitSet);
@@ -133,7 +133,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
     /**
      * Sets all of the bits in this BitSet to {@code false}.
      *
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet clear() {
         bitSet.clear();
@@ -145,7 +145,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      *
      * @param bitIndexArray the index of the bit to be cleared.
      * @throws IndexOutOfBoundsException if the specified index is negative.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet clear(final int... bitIndexArray) {
         for (final int e : bitIndexArray) {
@@ -159,7 +159,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      *
      * @param bitIndex the index of the bit to be cleared.
      * @throws IndexOutOfBoundsException if the specified index is negative.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet clear(final int bitIndex) {
         bitSet.clear(bitIndex);
@@ -174,7 +174,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * @param toIndex index after the last bit to be cleared.
      * @throws IndexOutOfBoundsException if {@code fromIndex} is negative, or {@code toIndex} is negative, or
      *         {@code fromIndex} is larger than {@code toIndex}.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet clear(final int fromIndex, final int toIndex) {
         bitSet.clear(fromIndex, toIndex);
@@ -210,7 +210,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      *
      * @param bitIndex the index of the bit to flip.
      * @throws IndexOutOfBoundsException if the specified index is negative.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet flip(final int bitIndex) {
         bitSet.flip(bitIndex);
@@ -225,7 +225,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * @param toIndex index after the last bit to flip.
      * @throws IndexOutOfBoundsException if {@code fromIndex} is negative, or {@code toIndex} is negative, or
      *         {@code fromIndex} is larger than {@code toIndex}.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet flip(final int fromIndex, final int toIndex) {
         bitSet.flip(fromIndex, toIndex);
@@ -341,12 +341,12 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Performs a logical <b>OR</b> of this bit set with the bit set argument. This bit set is modified so that a bit in it
+     * Performs a logical <strong>OR</strong> of this bit set with the bit set argument. This bit set is modified so that a bit in it
      * has the value {@code true} if and only if it either already had the value {@code true} or the corresponding bit in
      * the bit set argument has the value {@code true}.
      *
      * @param set a bit set.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet or(final BitSet set) {
         bitSet.or(set);
@@ -354,12 +354,12 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Performs a logical <b>OR</b> of this bit set with the bit set arguments. This bit set is modified so that a bit in it
+     * Performs a logical <strong>OR</strong> of this bit set with the bit set arguments. This bit set is modified so that a bit in it
      * has the value {@code true} if and only if it either already had the value {@code true} or the corresponding bit in
      * the bit set argument has the value {@code true}.
      *
      * @param set a bit set.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet or(final FluentBitSet... set) {
         for (final FluentBitSet e : set) {
@@ -369,12 +369,12 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Performs a logical <b>OR</b> of this bit set with the bit set argument. This bit set is modified so that a bit in it
+     * Performs a logical <strong>OR</strong> of this bit set with the bit set argument. This bit set is modified so that a bit in it
      * has the value {@code true} if and only if it either already had the value {@code true} or the corresponding bit in
      * the bit set argument has the value {@code true}.
      *
      * @param set a bit set.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet or(final FluentBitSet set) {
         this.bitSet.or(set.bitSet);
@@ -420,7 +420,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      *
      * @param bitIndexArray a bit index array.
      * @throws IndexOutOfBoundsException if the specified index is negative.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet set(final int... bitIndexArray) {
         for (final int e : bitIndexArray) {
@@ -434,7 +434,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      *
      * @param bitIndex a bit index
      * @throws IndexOutOfBoundsException if the specified index is negative
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet set(final int bitIndex) {
         bitSet.set(bitIndex);
@@ -447,7 +447,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * @param bitIndex a bit index.
      * @param value a boolean value to set.
      * @throws IndexOutOfBoundsException if the specified index is negative.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet set(final int bitIndex, final boolean value) {
         bitSet.set(bitIndex, value);
@@ -462,7 +462,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * @param toIndex index after the last bit to be set.
      * @throws IndexOutOfBoundsException if {@code fromIndex} is negative, or {@code toIndex} is negative, or
      *         {@code fromIndex} is larger than {@code toIndex}.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet set(final int fromIndex, final int toIndex) {
         bitSet.set(fromIndex, toIndex);
@@ -478,7 +478,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * @param value value to set the selected bits to.
      * @throws IndexOutOfBoundsException if {@code fromIndex} is negative, or {@code toIndex} is negative, or
      *         {@code fromIndex} is larger than {@code toIndex}.
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet set(final int fromIndex, final int toIndex, final boolean value) {
         bitSet.set(fromIndex, toIndex, value);
@@ -486,14 +486,14 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the bits from the specified {@code fromIndex} (inclusive) to the specified {@code toIndex} (exclusive) to
+     * Sets the bits from the specified {@code fromIndex} (inclusive) to the specified {@code toIndex} (inclusive) to
      * {@code true}.
      *
      * @param fromIndex index of the first bit to be set
      * @param toIndex index of the last bit to be set
      * @throws IndexOutOfBoundsException if {@code fromIndex} is negative, or {@code toIndex} is negative, or
      *         {@code fromIndex} is larger than {@code toIndex}
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet setInclusive(final int fromIndex, final int toIndex) {
         bitSet.set(fromIndex, toIndex + 1);
@@ -571,7 +571,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Performs a logical <b>XOR</b> of this bit set with the bit set argument. This bit set is modified so that a bit in it
+     * Performs a logical <strong>XOR</strong> of this bit set with the bit set argument. This bit set is modified so that a bit in it
      * has the value {@code true} if and only if one of the following statements holds:
      * <ul>
      * <li>The bit initially has the value {@code true}, and the corresponding bit in the argument has the value
@@ -581,7 +581,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * </ul>
      *
      * @param set a bit set
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet xor(final BitSet set) {
         bitSet.xor(set);
@@ -589,7 +589,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
     }
 
     /**
-     * Performs a logical <b>XOR</b> of this bit set with the bit set argument. This bit set is modified so that a bit in it
+     * Performs a logical <strong>XOR</strong> of this bit set with the bit set argument. This bit set is modified so that a bit in it
      * has the value {@code true} if and only if one of the following statements holds:
      * <ul>
      * <li>The bit initially has the value {@code true}, and the corresponding bit in the argument has the value
@@ -599,7 +599,7 @@ public final class FluentBitSet implements Cloneable, Serializable {
      * </ul>
      *
      * @param set a bit set
-     * @return this.
+     * @return {@code this} instance.
      */
     public FluentBitSet xor(final FluentBitSet set) {
         bitSet.xor(set.bitSet);

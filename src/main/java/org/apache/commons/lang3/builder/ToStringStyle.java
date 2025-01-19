@@ -28,6 +28,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * Controls {@link String} formatting for {@link ToStringBuilder}.
@@ -127,184 +128,84 @@ public abstract class ToStringStyle implements Serializable {
          * </p>
          */
         JsonToStringStyle() {
-            this.setUseClassName(false);
-            this.setUseIdentityHashCode(false);
+            setUseClassName(false);
+            setUseIdentityHashCode(false);
 
-            this.setContentStart("{");
-            this.setContentEnd("}");
+            setContentStart("{");
+            setContentEnd("}");
 
-            this.setArrayStart("[");
-            this.setArrayEnd("]");
+            setArrayStart("[");
+            setArrayEnd("]");
 
-            this.setFieldSeparator(",");
-            this.setFieldNameValueSeparator(":");
+            setFieldSeparator(",");
+            setFieldNameValueSeparator(":");
 
-            this.setNullText("null");
+            setNullText("null");
 
-            this.setSummaryObjectStartText("\"<");
-            this.setSummaryObjectEndText(">\"");
+            setSummaryObjectStartText("\"<");
+            setSummaryObjectEndText(">\"");
 
-            this.setSizeStartText("\"<size=");
-            this.setSizeEndText(">\"");
+            setSizeStartText("\"<size=");
+            setSizeEndText(">\"");
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName,
-                           final boolean[] array, final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final boolean[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName, final byte[] array,
-                           final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final byte[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName, final char[] array,
-                           final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final char[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName,
-                           final double[] array, final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final double[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName,
-                           final float[] array, final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final float[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName, final int[] array,
-                           final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final int[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName, final long[] array,
-                           final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final long[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName, final Object value,
-                           final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final Object value, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, value, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName,
-                           final Object[] array, final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final Object[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
         @Override
-        public void append(final StringBuffer buffer, final String fieldName,
-                           final short[] array, final Boolean fullDetail) {
-
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
-            if (!isFullDetail(fullDetail)) {
-                throw new UnsupportedOperationException(
-                        "FullDetail must be true when using JsonToStringStyle");
-            }
-
+        public void append(final StringBuffer buffer, final String fieldName, final short[] array, final Boolean fullDetail) {
+            checkAppendInput(fieldName, fullDetail);
             super.append(buffer, fieldName, array, fullDetail);
         }
 
@@ -324,7 +225,6 @@ public abstract class ToStringStyle implements Serializable {
                 buffer.append(getArrayEnd());
                 return;
             }
-
             buffer.append(coll);
         }
 
@@ -389,10 +289,7 @@ public abstract class ToStringStyle implements Serializable {
         @Override
         protected void appendFieldStart(final StringBuffer buffer, final String fieldName) {
 
-            if (fieldName == null) {
-                throw new UnsupportedOperationException(
-                        "Field names are mandatory when using JsonToStringStyle");
-            }
+            checkFieldName(fieldName);
 
             super.appendFieldStart(buffer, FIELD_NAME_QUOTE + StringEscapeUtils.escapeJson(fieldName)
                     + FIELD_NAME_QUOTE);
@@ -406,6 +303,23 @@ public abstract class ToStringStyle implements Serializable {
          */
         private void appendValueAsString(final StringBuffer buffer, final String value) {
             buffer.append('"').append(StringEscapeUtils.escapeJson(value)).append('"');
+        }
+
+        private void checkAppendInput(final String fieldName, final Boolean fullDetail) {
+            checkFieldName(fieldName);
+            checkIsFullDetail(fullDetail);
+        }
+
+        private void checkFieldName(final String fieldName) {
+            if (fieldName == null) {
+                throw new UnsupportedOperationException("Field names are mandatory when using JsonToStringStyle");
+            }
+        }
+
+        private void checkIsFullDetail(final Boolean fullDetail) {
+            if (!isFullDetail(fullDetail)) {
+                throw new UnsupportedOperationException("FullDetail must be true when using JsonToStringStyle");
+            }
         }
 
         private boolean isJsonArray(final String valueAsString) {
@@ -445,10 +359,10 @@ public abstract class ToStringStyle implements Serializable {
          * <p>Use the static constant rather than instantiating.</p>
          */
         MultiLineToStringStyle() {
-            this.setContentStart("[");
-            this.setFieldSeparator(System.lineSeparator() + "  ");
-            this.setFieldSeparatorAtStart(true);
-            this.setContentEnd(System.lineSeparator() + "]");
+            setContentStart("[");
+            setFieldSeparator(System.lineSeparator() + "  ");
+            setFieldSeparatorAtStart(true);
+            setContentEnd(System.lineSeparator() + "]");
         }
 
         /**
@@ -479,8 +393,8 @@ public abstract class ToStringStyle implements Serializable {
          * <p>Use the static constant rather than instantiating.</p>
          */
         NoClassNameToStringStyle() {
-            this.setUseClassName(false);
-            this.setUseIdentityHashCode(false);
+            setUseClassName(false);
+            setUseIdentityHashCode(false);
         }
 
         /**
@@ -511,7 +425,7 @@ public abstract class ToStringStyle implements Serializable {
          * <p>Use the static constant rather than instantiating.</p>
          */
         NoFieldNameToStringStyle() {
-            this.setUseFieldNames(false);
+            setUseFieldNames(false);
         }
 
         /**
@@ -542,8 +456,8 @@ public abstract class ToStringStyle implements Serializable {
          * <p>Use the static constant rather than instantiating.</p>
          */
         ShortPrefixToStringStyle() {
-            this.setUseShortClassName(true);
-            this.setUseIdentityHashCode(false);
+            setUseShortClassName(true);
+            setUseIdentityHashCode(false);
         }
 
         /**
@@ -573,11 +487,11 @@ public abstract class ToStringStyle implements Serializable {
          * <p>Use the static constant rather than instantiating.</p>
          */
         SimpleToStringStyle() {
-            this.setUseClassName(false);
-            this.setUseIdentityHashCode(false);
-            this.setUseFieldNames(false);
-            this.setContentStart(StringUtils.EMPTY);
-            this.setContentEnd(StringUtils.EMPTY);
+            setUseClassName(false);
+            setUseIdentityHashCode(false);
+            setUseFieldNames(false);
+            setContentStart(StringUtils.EMPTY);
+            setContentEnd(StringUtils.EMPTY);
         }
 
         /**
@@ -686,9 +600,8 @@ public abstract class ToStringStyle implements Serializable {
     /**
      * A registry of objects used by {@code reflectionToString} methods
      * to detect cyclical object references and avoid infinite loops.
-     *
      */
-    private static final ThreadLocal<WeakHashMap<Object, Object>> REGISTRY = new ThreadLocal<>();
+    private static final ThreadLocal<WeakHashMap<Object, Object>> REGISTRY = ThreadLocal.withInitial(WeakHashMap::new);
     /*
      * Note that objects of this class are generally shared between threads, so
      * an instance variable would not be suitable here.
@@ -719,8 +632,7 @@ public abstract class ToStringStyle implements Serializable {
      *             object.
      */
     static boolean isRegistered(final Object value) {
-        final Map<Object, Object> m = getRegistry();
-        return m != null && m.containsKey(value);
+        return getRegistry().containsKey(value);
     }
 
     /**
@@ -732,10 +644,6 @@ public abstract class ToStringStyle implements Serializable {
      */
     static void register(final Object value) {
         if (value != null) {
-            final Map<Object, Object> m = getRegistry();
-            if (m == null) {
-                REGISTRY.set(new WeakHashMap<>());
-            }
             getRegistry().put(value, null);
         }
     }
@@ -753,11 +661,9 @@ public abstract class ToStringStyle implements Serializable {
     static void unregister(final Object value) {
         if (value != null) {
             final Map<Object, Object> m = getRegistry();
-            if (m != null) {
-                m.remove(value);
-                if (m.isEmpty()) {
-                    REGISTRY.remove();
-                }
+            m.remove(value);
+            if (m.isEmpty()) {
+                REGISTRY.remove();
             }
         }
     }
@@ -839,27 +745,27 @@ public abstract class ToStringStyle implements Serializable {
     private boolean defaultFullDetail = true;
 
     /**
-     * The {@code null} text {@code '&lt;null&gt;'}.
+     * The {@code null} text {@code "<null>"}.
      */
     private String nullText = "<null>";
 
     /**
-     * The summary size text start {@code '&lt;size'}.
+     * The summary size text start {@code "<size="}.
      */
     private String sizeStartText = "<size=";
 
     /**
-     * The summary size text start {@code '&gt;'}.
+     * The summary size text start {@code ">"}.
      */
     private String sizeEndText = ">";
 
     /**
-     * The summary object text start {@code '&lt;'}.
+     * The summary object text start {@code "<"}.
      */
     private String summaryObjectStartText = "<";
 
     /**
-     * The summary object text start {@code '&gt;'}.
+     * The summary object text start {@code ">"}.
      */
     private String summaryObjectEndText = ">";
 
@@ -1675,7 +1581,7 @@ public abstract class ToStringStyle implements Serializable {
      * @param object  the {@link Object} whose id to output
      */
     protected void appendIdentityHashCode(final StringBuffer buffer, final Object object) {
-        if (this.isUseIdentityHashCode() && object != null) {
+        if (isUseIdentityHashCode() && object != null) {
             register(object);
             buffer.append('@');
             buffer.append(ObjectUtils.identityHashCodeHex(object));
@@ -1801,7 +1707,7 @@ public abstract class ToStringStyle implements Serializable {
     /**
      * Appends to the {@code toString} an indicator for {@code null}.
      *
-     * <p>The default indicator is {@code '&lt;null&gt;'}.</p>
+     * <p>The default indicator is {@code "<null>"}.</p>
      *
      * @param buffer  the {@link StringBuffer} to populate
      * @param fieldName  the field name, typically not used as already appended
@@ -1968,7 +1874,7 @@ public abstract class ToStringStyle implements Serializable {
      * <p>The output consists of a prefix, the passed in size
      * and a suffix.</p>
      *
-     * <p>The default format is {@code '&lt;size=n&gt;'}.</p>
+     * <p>The default format is {@code "<size=n>"}.</p>
      *
      * @param buffer  the {@link StringBuffer} to populate
      * @param fieldName  the field name, typically not used as already appended
@@ -2278,7 +2184,7 @@ public abstract class ToStringStyle implements Serializable {
      * @since 2.0
      */
     protected void removeLastFieldSeparator(final StringBuffer buffer) {
-        if (StringUtils.endsWith(buffer, fieldSeparator)) {
+        if (Strings.CS.endsWith(buffer, fieldSeparator)) {
             buffer.setLength(buffer.length() - fieldSeparator.length());
         }
     }

@@ -19,6 +19,7 @@ package org.apache.commons.lang3;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -37,6 +38,7 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,12 +52,16 @@ final class ClassNotFoundSerialization implements Serializable {
     }
 }
 
+interface SerializableSupplier<T> extends Supplier<T>, Serializable {
+    // empty
+}
+
 /**
- * Unit tests {@link org.apache.commons.lang3.SerializationUtils}.
+ * Tests {@link SerializationUtils}.
  */
 public class SerializationUtilsTest extends AbstractLangTest {
 
-  static final String CLASS_NOT_FOUND_MESSAGE = "ClassNotFoundSerialization.readObject fake exception";
+    static final String CLASS_NOT_FOUND_MESSAGE = "ClassNotFoundSerialization.readObject fake exception";
     protected static final String SERIALIZE_IO_EXCEPTION_MESSAGE = "Anonymous OutputStream I/O exception";
 
     private String iString;
@@ -75,7 +81,7 @@ public class SerializationUtilsTest extends AbstractLangTest {
     public void testClone() {
         final Object test = SerializationUtils.clone(iMap);
         assertNotNull(test);
-        assertTrue(test instanceof HashMap<?, ?>);
+        assertInstanceOf(HashMap.class, test);
         assertNotSame(test, iMap);
         final HashMap<?, ?> testMap = (HashMap<?, ?>) test;
         assertEquals(iString, testMap.get("FOO"));
@@ -89,6 +95,14 @@ public class SerializationUtilsTest extends AbstractLangTest {
     public void testCloneNull() {
         final Object test = SerializationUtils.clone(null);
         assertNull(test);
+    }
+
+    @Test
+    public void testCloneSerializableSupplier() {
+        final SerializableSupplier<String> supplier = () -> "test";
+        assertEquals("test", supplier.get());
+        final SerializableSupplier<String> clone = SerializationUtils.clone(supplier);
+        assertEquals("test", clone.get());
     }
 
     @Test
@@ -117,7 +131,7 @@ public class SerializationUtilsTest extends AbstractLangTest {
 
         final Object test = SerializationUtils.deserialize(streamReal.toByteArray());
         assertNotNull(test);
-        assertTrue(test instanceof HashMap<?, ?>);
+        assertInstanceOf(HashMap.class, test);
         assertNotSame(test, iMap);
         final HashMap<?, ?> testMap = (HashMap<?, ?>) test;
         assertEquals(iString, testMap.get("FOO"));
@@ -172,7 +186,7 @@ public class SerializationUtilsTest extends AbstractLangTest {
         final ByteArrayInputStream inTest = new ByteArrayInputStream(streamReal.toByteArray());
         final Object test = SerializationUtils.deserialize(inTest);
         assertNotNull(test);
-        assertTrue(test instanceof HashMap<?, ?>);
+        assertInstanceOf(HashMap.class, test);
         assertNotSame(test, iMap);
         final HashMap<?, ?> testMap = (HashMap<?, ?>) test;
         assertEquals(iString, testMap.get("FOO"));
@@ -242,7 +256,7 @@ public class SerializationUtilsTest extends AbstractLangTest {
     }
 
     @Test
-    public void testNegativeByteArray() throws IOException {
+    public void testNegativeByteArray() {
         final byte[] byteArray = {
             (byte) -84, (byte) -19, (byte) 0, (byte) 5, (byte) 125, (byte) -19, (byte) 0,
             (byte) 5, (byte) 115, (byte) 114, (byte) -1, (byte) 97, (byte) 122, (byte) -48, (byte) -65

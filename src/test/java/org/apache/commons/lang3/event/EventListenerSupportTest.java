@@ -18,6 +18,7 @@
 package org.apache.commons.lang3.event;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -29,19 +30,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.AbstractLangTest;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.function.FailableConsumer;
 import org.easymock.EasyMock;
 import org.junit.jupiter.api.Test;
 
 /**
- * @since 3.0
  */
 public class EventListenerSupportTest extends AbstractLangTest {
 
@@ -221,4 +226,57 @@ public class EventListenerSupportTest extends AbstractLangTest {
         eventListenerSupport.fire().vetoableChange(respond);
         EasyMock.verify(listener);
     }
+
+    /**
+     * Tests that throwing an exception from a listener stops calling the remaining listeners.
+     */
+    @Test
+    public void testThrowingListener() {
+        final AtomicInteger count = new AtomicInteger();
+        final EventListenerSupport<VetoableChangeListener> listenerSupport = EventListenerSupport.create(VetoableChangeListener.class);
+        final int vetoLimit = 1;
+        final int listenerCount = 10;
+        for (int i = 0; i < listenerCount; ++i) {
+            listenerSupport.addListener(evt -> {
+                if (count.incrementAndGet() > vetoLimit) {
+                    throw new PropertyVetoException(count.toString(), evt);
+                }
+            });
+        }
+        assertEquals(listenerCount, listenerSupport.getListenerCount());
+        assertEquals(0, count.get());
+        final Exception e = assertThrows(UndeclaredThrowableException.class,
+                () -> listenerSupport.fire().vetoableChange(new PropertyChangeEvent(new Date(), "Day", 0, 1)));
+        final Throwable rootCause = ExceptionUtils.getRootCause(e);
+        assertInstanceOf(PropertyVetoException.class, rootCause);
+        assertEquals(vetoLimit + 1, count.get());
+    }
+
+    /**
+     * Tests that throwing an exception from a listener continues calling the remaining listeners.
+     */
+    @Test
+    public void testThrowingListenerContinues() throws PropertyVetoException {
+        final AtomicInteger count = new AtomicInteger();
+        final EventListenerSupport<VetoableChangeListener> listenerSupport = new EventListenerSupport<VetoableChangeListener>(VetoableChangeListener.class) {
+            @Override
+            protected InvocationHandler createInvocationHandler() {
+                return new ProxyInvocationHandler(FailableConsumer.nop());
+            }
+        };
+        final int vetoLimit = 1;
+        final int listenerCount = 10;
+        for (int i = 0; i < listenerCount; ++i) {
+            listenerSupport.addListener(evt -> {
+                if (count.incrementAndGet() > vetoLimit) {
+                    throw new PropertyVetoException(count.toString(), evt);
+                }
+            });
+        }
+        assertEquals(listenerCount, listenerSupport.getListenerCount());
+        assertEquals(0, count.get());
+        listenerSupport.fire().vetoableChange(new PropertyChangeEvent(new Date(), "Day", 0, 1));
+        assertEquals(listenerCount, count.get());
+    }
+
 }

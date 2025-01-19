@@ -32,6 +32,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.AbstractLangTest;
+import org.apache.commons.lang3.time.DurationFormatUtils.Token;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.DefaultTimeZone;
 
@@ -72,58 +73,41 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
         c.set(year, month, day, 0, 0, 0);
         final int[] array1 = { year, month, day, 0, 0, 0 };
         final int[] array2 = { year, month, day, 0, 0, 0 };
-        for (int i=0; i < FOUR_YEARS; i++) {
+        for (int i = 0; i < FOUR_YEARS; i++) {
             array2[0] = c.get(Calendar.YEAR);
             array2[1] = c.get(Calendar.MONTH);
             array2[2] = c.get(Calendar.DAY_OF_MONTH);
             final String tmpMsg = msg + array2[0] + "-" + array2[1] + "-" + array2[2] + " at ";
-            assertEqualDuration(tmpMsg + i, Integer.toString(i), array1, array2, format );
+            assertEqualDuration(tmpMsg + i, Integer.toString(i), array1, array2, format);
             c.add(calendarType, 1);
         }
     }
 
-    private DurationFormatUtils.Token createTokenWithCount(final Object value, final int count) {
-        DurationFormatUtils.Token token = new DurationFormatUtils.Token(value, false, -1);
+    private DurationFormatUtils.Token createTokenWithCount(final CharSequence value, final int count) {
+        final DurationFormatUtils.Token token = new DurationFormatUtils.Token(value, false, -1);
+        // To help debugging, toString() on a Token should never blow up.
+        assertNotNull(token.toString());
         for (int i = 1; i < count; i++) {
             token.increment();
+            assertNotNull(token.toString());
         }
         return token;
     }
 
     @Test
     public void testAlternatingLiteralOptionals() {
-        String format = "['d'dH'h'][m'm']['s's]['ms'S]";
-
-        assertEquals("d1",
-            DurationFormatUtils.formatDuration(Duration.ofDays(1).toMillis(), format));
-
-        assertEquals("1h",
-            DurationFormatUtils.formatDuration(Duration.ofHours(1).toMillis(), format));
-
-        assertEquals("1m",
-            DurationFormatUtils.formatDuration(Duration.ofMinutes(1).toMillis(), format));
-
-        assertEquals("s1",
-            DurationFormatUtils.formatDuration(Duration.ofSeconds(1).toMillis(), format));
-
-        assertEquals("ms001",
-            DurationFormatUtils.formatDuration(Duration.ofMillis(1).toMillis(), format));
-
-        assertEquals("d1s1",
-            DurationFormatUtils.formatDuration(Duration.ofDays(1).plusSeconds(1).toMillis(), format));
-
-        assertEquals("d11h",
-            DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).toMillis(), format));
-
-        assertEquals("d11h1m",
-            DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).plusMinutes(1).toMillis(), format));
-
-        assertEquals("d11h1ms1",
-            DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).plusMinutes(1).plusSeconds(1).toMillis(), format));
-
+        final String format = "['d'dH'h'][m'm']['s's]['ms'S]";
+        assertEquals("d1", DurationFormatUtils.formatDuration(Duration.ofDays(1).toMillis(), format));
+        assertEquals("1h", DurationFormatUtils.formatDuration(Duration.ofHours(1).toMillis(), format));
+        assertEquals("1m", DurationFormatUtils.formatDuration(Duration.ofMinutes(1).toMillis(), format));
+        assertEquals("s1", DurationFormatUtils.formatDuration(Duration.ofSeconds(1).toMillis(), format));
+        assertEquals("ms001", DurationFormatUtils.formatDuration(Duration.ofMillis(1).toMillis(), format));
+        assertEquals("d1s1", DurationFormatUtils.formatDuration(Duration.ofDays(1).plusSeconds(1).toMillis(), format));
+        assertEquals("d11h", DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).toMillis(), format));
+        assertEquals("d11h1m", DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).plusMinutes(1).toMillis(), format));
+        assertEquals("d11h1ms1", DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).plusMinutes(1).plusSeconds(1).toMillis(), format));
         assertEquals("d11h1ms1ms001",
-            DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).plusMinutes(1).plusSeconds(1).plusMillis(1).toMillis(), format));
-
+                DurationFormatUtils.formatDuration(Duration.ofDays(1).plusHours(1).plusMinutes(1).plusSeconds(1).plusMillis(1).toMillis(), format));
     }
 
     /** See https://issues.apache.org/bugzilla/show_bug.cgi?id=38401 */
@@ -133,6 +117,7 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
                              new int[] { 2006, 1, 26, 10, 47, 34 }, "yyyy/MM/dd HH:mm:ss SSS");
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testConstructor() {
         assertNotNull(new DurationFormatUtils());
@@ -161,101 +146,66 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
     public void testEdgeDurations() {
         // This test case must use a time zone without DST
         TimeZone.setDefault(FastTimeZone.getGmtTimeZone());
-        assertEqualDuration("01", new int[] { 2006, 0, 15, 0, 0, 0 },
-                             new int[] { 2006, 2, 10, 0, 0, 0 }, "MM");
-        assertEqualDuration("12", new int[] { 2005, 0, 15, 0, 0, 0 },
-                             new int[] { 2006, 0, 15, 0, 0, 0 }, "MM");
-        assertEqualDuration("12", new int[] { 2005, 0, 15, 0, 0, 0 },
-                             new int[] { 2006, 0, 16, 0, 0, 0 }, "MM");
-        assertEqualDuration("11", new int[] { 2005, 0, 15, 0, 0, 0 },
-                             new int[] { 2006, 0, 14, 0, 0, 0 }, "MM");
+        assertEqualDuration("01", new int[] { 2006, 0, 15, 0, 0, 0 }, new int[] { 2006, 2, 10, 0, 0, 0 }, "MM");
+        assertEqualDuration("12", new int[] { 2005, 0, 15, 0, 0, 0 }, new int[] { 2006, 0, 15, 0, 0, 0 }, "MM");
+        assertEqualDuration("12", new int[] { 2005, 0, 15, 0, 0, 0 }, new int[] { 2006, 0, 16, 0, 0, 0 }, "MM");
+        assertEqualDuration("11", new int[] { 2005, 0, 15, 0, 0, 0 }, new int[] { 2006, 0, 14, 0, 0, 0 }, "MM");
 
-        assertEqualDuration("01 26", new int[] { 2006, 0, 15, 0, 0, 0 },
-                             new int[] { 2006, 2, 10, 0, 0, 0 }, "MM dd");
-        assertEqualDuration("54", new int[] { 2006, 0, 15, 0, 0, 0 },
-                             new int[] { 2006, 2, 10, 0, 0, 0 }, "dd");
+        assertEqualDuration("01 26", new int[] { 2006, 0, 15, 0, 0, 0 }, new int[] { 2006, 2, 10, 0, 0, 0 }, "MM dd");
+        assertEqualDuration("54", new int[] { 2006, 0, 15, 0, 0, 0 }, new int[] { 2006, 2, 10, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("09 12", new int[] { 2006, 1, 20, 0, 0, 0 },
-                             new int[] { 2006, 11, 4, 0, 0, 0 }, "MM dd");
-        assertEqualDuration("287", new int[] { 2006, 1, 20, 0, 0, 0 },
-                             new int[] { 2006, 11, 4, 0, 0, 0 }, "dd");
+        assertEqualDuration("09 12", new int[] { 2006, 1, 20, 0, 0, 0 }, new int[] { 2006, 11, 4, 0, 0, 0 }, "MM dd");
+        assertEqualDuration("287", new int[] { 2006, 1, 20, 0, 0, 0 }, new int[] { 2006, 11, 4, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("11 30", new int[] { 2006, 0, 2, 0, 0, 0 },
-                             new int[] { 2007, 0, 1, 0, 0, 0 }, "MM dd");
-        assertEqualDuration("364", new int[] { 2006, 0, 2, 0, 0, 0 },
-                             new int[] { 2007, 0, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("11 30", new int[] { 2006, 0, 2, 0, 0, 0 }, new int[] { 2007, 0, 1, 0, 0, 0 }, "MM dd");
+        assertEqualDuration("364", new int[] { 2006, 0, 2, 0, 0, 0 }, new int[] { 2007, 0, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("12 00", new int[] { 2006, 0, 1, 0, 0, 0 },
-                             new int[] { 2007, 0, 1, 0, 0, 0 }, "MM dd");
-        assertEqualDuration("365", new int[] { 2006, 0, 1, 0, 0, 0 },
-                             new int[] { 2007, 0, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("12 00", new int[] { 2006, 0, 1, 0, 0, 0 }, new int[] { 2007, 0, 1, 0, 0, 0 }, "MM dd");
+        assertEqualDuration("365", new int[] { 2006, 0, 1, 0, 0, 0 }, new int[] { 2007, 0, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("31", new int[] { 2006, 0, 1, 0, 0, 0 },
-                new int[] { 2006, 1, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("31", new int[] { 2006, 0, 1, 0, 0, 0 }, new int[] { 2006, 1, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("92", new int[] { 2005, 9, 1, 0, 0, 0 },
-                new int[] { 2006, 0, 1, 0, 0, 0 }, "dd");
-        assertEqualDuration("77", new int[] { 2005, 9, 16, 0, 0, 0 },
-                new int[] { 2006, 0, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("92", new int[] { 2005, 9, 1, 0, 0, 0 }, new int[] { 2006, 0, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("77", new int[] { 2005, 9, 16, 0, 0, 0 }, new int[] { 2006, 0, 1, 0, 0, 0 }, "dd");
 
         // test month larger in start than end
-        assertEqualDuration("136", new int[] { 2005, 9, 16, 0, 0, 0 },
-                new int[] { 2006, 2, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("136", new int[] { 2005, 9, 16, 0, 0, 0 }, new int[] { 2006, 2, 1, 0, 0, 0 }, "dd");
         // test when start in leap year
-        assertEqualDuration("136", new int[] { 2004, 9, 16, 0, 0, 0 },
-                new int[] { 2005, 2, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("136", new int[] { 2004, 9, 16, 0, 0, 0 }, new int[] { 2005, 2, 1, 0, 0, 0 }, "dd");
         // test when end in leap year
-        assertEqualDuration("137", new int[] { 2003, 9, 16, 0, 0, 0 },
-                new int[] { 2004, 2, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("137", new int[] { 2003, 9, 16, 0, 0, 0 }, new int[] { 2004, 2, 1, 0, 0, 0 }, "dd");
         // test when end in leap year but less than end of feb
-        assertEqualDuration("135", new int[] { 2003, 9, 16, 0, 0, 0 },
-                new int[] { 2004, 1, 28, 0, 0, 0 }, "dd");
+        assertEqualDuration("135", new int[] { 2003, 9, 16, 0, 0, 0 }, new int[] { 2004, 1, 28, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("364", new int[] { 2007, 0, 2, 0, 0, 0 },
-                new int[] { 2008, 0, 1, 0, 0, 0 }, "dd");
-        assertEqualDuration("729", new int[] { 2006, 0, 2, 0, 0, 0 },
-                new int[] { 2008, 0, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("364", new int[] { 2007, 0, 2, 0, 0, 0 }, new int[] { 2008, 0, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("729", new int[] { 2006, 0, 2, 0, 0, 0 }, new int[] { 2008, 0, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("365", new int[] { 2007, 2, 2, 0, 0, 0 },
-                new int[] { 2008, 2, 1, 0, 0, 0 }, "dd");
-        assertEqualDuration("333", new int[] { 2007, 1, 2, 0, 0, 0 },
-                new int[] { 2008, 0, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("365", new int[] { 2007, 2, 2, 0, 0, 0 }, new int[] { 2008, 2, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("333", new int[] { 2007, 1, 2, 0, 0, 0 }, new int[] { 2008, 0, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("28", new int[] { 2008, 1, 2, 0, 0, 0 },
-                new int[] { 2008, 2, 1, 0, 0, 0 }, "dd");
-        assertEqualDuration("393", new int[] { 2007, 1, 2, 0, 0, 0 },
-                new int[] { 2008, 2, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("28", new int[] { 2008, 1, 2, 0, 0, 0 }, new int[] { 2008, 2, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("393", new int[] { 2007, 1, 2, 0, 0, 0 }, new int[] { 2008, 2, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("369", new int[] { 2004, 0, 29, 0, 0, 0 },
-                new int[] { 2005, 1, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("369", new int[] { 2004, 0, 29, 0, 0, 0 }, new int[] { 2005, 1, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("338", new int[] { 2004, 1, 29, 0, 0, 0 },
-                new int[] { 2005, 1, 1, 0, 0, 0 }, "dd");
+        assertEqualDuration("338", new int[] { 2004, 1, 29, 0, 0, 0 }, new int[] { 2005, 1, 1, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("28", new int[] { 2004, 2, 8, 0, 0, 0 },
-                new int[] { 2004, 3, 5, 0, 0, 0 }, "dd");
+        assertEqualDuration("28", new int[] { 2004, 2, 8, 0, 0, 0 }, new int[] { 2004, 3, 5, 0, 0, 0 }, "dd");
 
-        assertEqualDuration("48", new int[] { 1992, 1, 29, 0, 0, 0 },
-                new int[] { 1996, 1, 29, 0, 0, 0 }, "M");
+        assertEqualDuration("48", new int[] { 1992, 1, 29, 0, 0, 0 }, new int[] { 1996, 1, 29, 0, 0, 0 }, "M");
 
         // this seems odd - and will fail if I throw it in as a brute force
         // below as it expects the answer to be 12. It's a tricky edge case
-        assertEqualDuration("11", new int[] { 1996, 1, 29, 0, 0, 0 },
-                new int[] { 1997, 1, 28, 0, 0, 0 }, "M");
+        assertEqualDuration("11", new int[] { 1996, 1, 29, 0, 0, 0 }, new int[] { 1997, 1, 28, 0, 0, 0 }, "M");
         // again - this seems odd
-        assertEqualDuration("11 28", new int[] { 1996, 1, 29, 0, 0, 0 },
-                new int[] { 1997, 1, 28, 0, 0, 0 }, "M d");
+        assertEqualDuration("11 28", new int[] { 1996, 1, 29, 0, 0, 0 }, new int[] { 1997, 1, 28, 0, 0, 0 }, "M d");
 
     }
 
     @Test
     public void testEmptyOptionals() {
-      assertEquals(
-          "",
-          DurationFormatUtils.formatDuration(0L, "[d'd'][H'h'][m'm'][s's']"));
-      assertEquals(
-          "",
-          DurationFormatUtils.formatDuration(0L, "['d''h''m''s's]"));
+        assertEquals("", DurationFormatUtils.formatDuration(0L, "[d'd'][H'h'][m'm'][s's']"));
+        assertEquals("", DurationFormatUtils.formatDuration(0L, "['d''h''m''s's]"));
     }
 
     @Test
@@ -511,11 +461,16 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
         cal.set(Calendar.MILLISECOND, 0);
         time = cal.getTime().getTime();
         assertEquals("40", DurationFormatUtils.formatPeriod(time1970, time, "yM"));
+        assertEquals("4 years 0 months", DurationFormatUtils.formatPeriod(time1970, time, "y' ''years' M 'months'"));
         assertEquals("4 years 0 months", DurationFormatUtils.formatPeriod(time1970, time, "y' years 'M' months'"));
+        assertEquals("4years 0months", DurationFormatUtils.formatPeriod(time1970, time, "y'years 'M'months'"));
         assertEquals("04/00", DurationFormatUtils.formatPeriod(time1970, time, "yy/MM"));
         assertEquals("48", DurationFormatUtils.formatPeriod(time1970, time, "M"));
         assertEquals("48", DurationFormatUtils.formatPeriod(time1970, time, "MM"));
         assertEquals("048", DurationFormatUtils.formatPeriod(time1970, time, "MMM"));
+        // no date in result
+        assertEquals("hello", DurationFormatUtils.formatPeriod(time1970, time, "'hello'"));
+        assertEquals("helloworld", DurationFormatUtils.formatPeriod(time1970, time, "'hello''world'"));
     }
 
     @Test
@@ -550,6 +505,8 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
         assertEquals("P1Y1M2DT10H30M0.000S", text);
         // want a way to say 'don't print the seconds in format()' or other fields for that matter:
         // assertEquals("P1Y2M3DT10H30M", text);
+        //
+        // TODO Jacoco shows missing coverage for internal negative days
     }
 
     @Test
@@ -564,22 +521,24 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
         assertThrows(IllegalArgumentException.class, () -> DurationFormatUtils.formatPeriodISO(5000, 2000));
     }
 
+    /**
+     * Takes 8 seconds to run.
+     */
+    @Test
+    public void testFourYears() {
+        final Calendar c = Calendar.getInstance();
+        c.set(2004, 0, 1, 0, 0, 0);
+        for (int i = 0; i < FOUR_YEARS; i++) {
+            bruteForce(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), "d", Calendar.DAY_OF_MONTH);
+            c.add(Calendar.DAY_OF_MONTH, 1);
+        }
+    }
+
     // https://issues.apache.org/jira/browse/LANG-281
     @Test
     public void testJiraLang281() {
-        assertEqualDuration("09", new int[] { 2005, 11, 31, 0, 0, 0 },
-                             new int[] { 2006, 9, 6, 0, 0, 0 }, "MM");
+        assertEqualDuration("09", new int[] { 2005, 11, 31, 0, 0, 0 }, new int[] { 2006, 9, 6, 0, 0, 0 }, "MM");
     }
-
-    // Takes a minute to run, so generally turned off
-//    public void testBrutally() {
-//        Calendar c = Calendar.getInstance();
-//        c.set(2004, 0, 1, 0, 0, 0);
-//        for (int i=0; i < FOUR_YEARS; i++) {
-//            bruteForce(c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), "d", Calendar.DAY_OF_MONTH );
-//            c.add(Calendar.DAY_OF_MONTH, 1);
-//        }
-//    }
 
     @Test
     public void testLANG815() {
@@ -613,7 +572,7 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
     public void testLANG984() { // Long durations
         assertEquals("0", DurationFormatUtils.formatDuration(0, "S"));
         assertEquals(Integer.toString(Integer.MAX_VALUE), DurationFormatUtils.formatDuration(Integer.MAX_VALUE, "S"));
-        long maxIntPlus=Integer.MAX_VALUE;
+        long maxIntPlus = Integer.MAX_VALUE;
         maxIntPlus++;
         assertEquals(Long.toString(maxIntPlus), DurationFormatUtils.formatDuration(maxIntPlus, "S"));
         assertEquals(Long.toString(Long.MAX_VALUE), DurationFormatUtils.formatDuration(Long.MAX_VALUE, "S"));
@@ -622,27 +581,27 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
     @Test
     public void testLexx() {
         // tests each constant
-        assertArrayEquals(new DurationFormatUtils.Token[]{
+        assertArrayEquals(new DurationFormatUtils.Token[] {
             createTokenWithCount(DurationFormatUtils.y, 1),
             createTokenWithCount(DurationFormatUtils.M, 1),
             createTokenWithCount(DurationFormatUtils.d, 1),
             createTokenWithCount(DurationFormatUtils.H, 1),
             createTokenWithCount(DurationFormatUtils.m, 1),
             createTokenWithCount(DurationFormatUtils.s, 1),
-            createTokenWithCount(DurationFormatUtils.S, 1)}, DurationFormatUtils.lexx("yMdHmsS"));
+            createTokenWithCount(DurationFormatUtils.S, 1) }, DurationFormatUtils.lexx("yMdHmsS"));
 
         // tests the ISO 8601-like
-        assertArrayEquals(new DurationFormatUtils.Token[]{
+        assertArrayEquals(new DurationFormatUtils.Token[] {
             createTokenWithCount(DurationFormatUtils.H, 2),
             createTokenWithCount(new StringBuilder(":"), 1),
             createTokenWithCount(DurationFormatUtils.m, 2),
             createTokenWithCount(new StringBuilder(":"), 1),
             createTokenWithCount(DurationFormatUtils.s, 2),
             createTokenWithCount(new StringBuilder("."), 1),
-            createTokenWithCount(DurationFormatUtils.S, 3)}, DurationFormatUtils.lexx("HH:mm:ss.SSS"));
+            createTokenWithCount(DurationFormatUtils.S, 3) }, DurationFormatUtils.lexx("HH:mm:ss.SSS"));
 
         // test the iso extended format
-        assertArrayEquals(new DurationFormatUtils.Token[]{
+        assertArrayEquals(new DurationFormatUtils.Token[] {
             createTokenWithCount(new StringBuilder("P"), 1),
             createTokenWithCount(DurationFormatUtils.y, 4),
             createTokenWithCount(new StringBuilder("Y"), 1),
@@ -657,39 +616,34 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
             createTokenWithCount(DurationFormatUtils.s, 1),
             createTokenWithCount(new StringBuilder("."), 1),
             createTokenWithCount(DurationFormatUtils.S, 3),
-            createTokenWithCount(new StringBuilder("S"), 1)}, DurationFormatUtils
-                .lexx(DurationFormatUtils.ISO_EXTENDED_FORMAT_PATTERN));
+            createTokenWithCount(new StringBuilder("S"), 1) }, DurationFormatUtils.lexx(DurationFormatUtils.ISO_EXTENDED_FORMAT_PATTERN));
 
         // test failures in equals
         final DurationFormatUtils.Token token = createTokenWithCount(DurationFormatUtils.y, 4);
-        assertNotEquals(token, new Object(), "Token equal to non-Token class. ");
-        assertNotEquals(token, createTokenWithCount(new Object(), 1), "Token equal to Token with wrong value class. ");
-        assertNotEquals(token, createTokenWithCount(DurationFormatUtils.y, 1), "Token equal to Token with different count. ");
-        final DurationFormatUtils.Token numToken = createTokenWithCount(Integer.valueOf(1), 4);
-        assertEquals(numToken, numToken, "Token with Number value not equal to itself. ");
+        assertEquals(token, token);
+        assertEquals(token.hashCode(), token.hashCode());
+        assertNotEquals(token, new Object(), "Token equal to non-Token class.");
+        final Token token2 = createTokenWithCount("", 1);
+        assertNotEquals(token, token2, "Token equal to Token with wrong value class.");
+        assertNotEquals(token.hashCode(), token2.hashCode());
+        assertNotEquals(token, createTokenWithCount(DurationFormatUtils.y, 1), "Token equal to Token with different count.");
+        final DurationFormatUtils.Token numToken = createTokenWithCount("1", 4);
+        assertEquals(numToken, numToken, "Token with Number value not equal to itself.");
     }
 
     @Test
     public void testLiteralPrefixOptionalToken() {
-      assertEquals(
-          DurationFormatUtils.formatDuration(10000L, "s's'"),
-          DurationFormatUtils.formatDuration(10000L, "['['d']']['<'H'>']['{'m'}']s's'"));
-      assertEquals(
-          DurationFormatUtils.formatDuration(10000L, "s's'"),
-          DurationFormatUtils.formatDuration(10000L, "['{'m'}']s's'"));
+        assertEquals(DurationFormatUtils.formatDuration(10000L, "s's'"), DurationFormatUtils.formatDuration(10000L, "['['d']']['<'H'>']['{'m'}']s's'"));
+        assertEquals(DurationFormatUtils.formatDuration(10000L, "s's'"), DurationFormatUtils.formatDuration(10000L, "['{'m'}']s's'"));
     }
 
     // Testing the under a day range in DurationFormatUtils.formatPeriod
     @Test
     public void testLowDurations() {
-        for (int hr=0; hr < 24; hr++) {
-            for (int min=0; min < 60; min++) {
-                for (int sec=0; sec < 60; sec++) {
-                    assertEqualDuration(hr + ":" + min + ":" + sec,
-                                         new int[] { 2000, 0, 1, 0, 0, 0, 0 },
-                                         new int[] { 2000, 0, 1, hr, min, sec },
-                                         "H:m:s"
-                                       );
+        for (int hr = 0; hr < 24; hr++) {
+            for (int min = 0; min < 60; min++) {
+                for (int sec = 0; sec < 60; sec++) {
+                    assertEqualDuration(hr + ":" + min + ":" + sec, new int[] { 2000, 0, 1, 0, 0, 0, 0 }, new int[] { 2000, 0, 1, hr, min, sec }, "H:m:s");
                 }
             }
         }
@@ -697,14 +651,10 @@ public class DurationFormatUtilsTest extends AbstractLangTest {
 
     @Test
     public void testMultipleOptionalBlocks() {
-
-      assertEquals(
-          DurationFormatUtils.formatDuration(Duration.ofHours(1).toMillis(), "'[['H']]'"),
-          DurationFormatUtils.formatDuration(Duration.ofHours(1).toMillis(), "['{'d'}']['[['H']]']"));
-
-      assertEquals(
-          DurationFormatUtils.formatDuration(Duration.ofDays(1).toMillis(), "['{'d'}']"),
-          DurationFormatUtils.formatDuration(Duration.ofDays(1).toMillis(), "['{'d'}']['['H']']"));
+        assertEquals(DurationFormatUtils.formatDuration(Duration.ofHours(1).toMillis(), "'[['H']]'"),
+                DurationFormatUtils.formatDuration(Duration.ofHours(1).toMillis(), "['{'d'}']['[['H']]']"));
+        assertEquals(DurationFormatUtils.formatDuration(Duration.ofDays(1).toMillis(), "['{'d'}']"),
+                DurationFormatUtils.formatDuration(Duration.ofDays(1).toMillis(), "['{'d'}']['['H']']"));
     }
 
     @Test

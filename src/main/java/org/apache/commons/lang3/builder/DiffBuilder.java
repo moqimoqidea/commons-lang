@@ -16,6 +16,7 @@
  */
 package org.apache.commons.lang3.builder;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +34,7 @@ import org.apache.commons.lang3.ObjectUtils;
  * </p>
  *
  * <pre>{@code
- * public class Person implements Diffable&lt;Person&gt; {
+ * public class Person implements Diffable<Person> {
  *   String name;
  *   int age;
  *   boolean smoker;
@@ -88,6 +89,13 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
         private String toStringFormat = TO_STRING_FORMAT;
 
         /**
+         * Constructs a new instance.
+         */
+        public Builder() {
+            // empty
+        }
+
+        /**
          * Builds a new configured {@link DiffBuilder}.
          *
          * @return a new configured {@link DiffBuilder}.
@@ -100,7 +108,7 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
          * Sets the left object.
          *
          * @param left the left object.
-         * @return this.
+         * @return {@code this} instance.
          */
         public Builder<T> setLeft(final T left) {
             this.left = left;
@@ -111,7 +119,7 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
          * Sets the right object.
          *
          * @param right the left object.
-         * @return this.
+         * @return {@code this} instance.
          */
         public Builder<T> setRight(final T right) {
             this.right = right;
@@ -122,7 +130,7 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
          * Sets the style will to use when outputting the objects, {@code null} uses the default.
          *
          * @param style the style to use when outputting the objects, {@code null} uses the default.
-         * @return this.
+         * @return {@code this} instance.
          */
         public Builder<T> setStyle(final ToStringStyle style) {
             this.style = style != null ? style : ToStringStyle.DEFAULT_STYLE;
@@ -137,7 +145,7 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
          * @param testObjectsEquals If true, this will test if lhs and rhs are the same or equal. All of the append(fieldName, left, right) methods will abort
          *                          without creating a field {@link Diff} if the trivially equal test is enabled and returns true. The result of this test is
          *                          never changed throughout the life of this {@link DiffBuilder}.
-         * @return this.
+         * @return {@code this} instance.
          */
         public Builder<T> setTestObjectsEquals(final boolean testObjectsEquals) {
             this.testObjectsEquals = testObjectsEquals;
@@ -148,7 +156,7 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
          * Sets the two-argument format string for {@link String#format(String, Object...)}, for example {@code "%s differs from %s"}.
          *
          * @param toStringFormat {@code null} uses the default.
-         * @return this.
+         * @return {@code this} instance.
          */
         public Builder<T> setToStringFormat(final String toStringFormat) {
             this.toStringFormat = toStringFormat != null ? toStringFormat : TO_STRING_FORMAT;
@@ -159,25 +167,34 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     private static final class SDiff<T> extends Diff<T> {
 
         private static final long serialVersionUID = 1L;
-        private final transient Supplier<T> leftS;
-        private final transient Supplier<T> rightS;
+        private final SerializableSupplier<T> leftSupplier;
+        private final SerializableSupplier<T> rightSupplier;
 
-        private SDiff(final String fieldName, final Supplier<T> leftS, final Supplier<T> rightS, final Class<T> type) {
+        private SDiff(final String fieldName, final SerializableSupplier<T> leftSupplier, final SerializableSupplier<T> rightSupplier, final Class<T> type) {
             super(fieldName, type);
-            this.leftS = leftS;
-            this.rightS = rightS;
+            this.leftSupplier = Objects.requireNonNull(leftSupplier);
+            this.rightSupplier = Objects.requireNonNull(rightSupplier);
         }
 
         @Override
         public T getLeft() {
-            return leftS.get();
+            return leftSupplier.get();
         }
 
         @Override
         public T getRight() {
-            return rightS.get();
+            return rightSupplier.get();
         }
 
+    }
+
+    /**
+     * Private interface while we still have to support serialization.
+     *
+     * @param <T> the type of results supplied by this supplier.
+     */
+    private interface SerializableSupplier<T> extends Supplier<T>, Serializable {
+        // empty
     }
 
     static final String TO_STRING_FORMAT = "%s differs from %s";
@@ -256,18 +273,18 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
         this.equals = testObjectsEquals && Objects.equals(left, right);
     }
 
-    private <F> DiffBuilder<T> add(final String fieldName, final Supplier<F> left, final Supplier<F> right, final Class<F> type) {
-        diffs.add(new SDiff<>(Objects.requireNonNull(fieldName, "fieldName"), left, right, type));
+    private <F> DiffBuilder<T> add(final String fieldName, final SerializableSupplier<F> left, final SerializableSupplier<F> right, final Class<F> type) {
+        diffs.add(new SDiff<>(fieldName, left, right, type));
         return this;
     }
 
     /**
-     * Test if two {@code boolean}s are equal.
+     * Tests if two {@code boolean}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code boolean}
      * @param rhs       the right-hand side {@code boolean}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final boolean lhs, final boolean rhs) {
@@ -275,12 +292,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code boolean[]}s are equal.
+     * Tests if two {@code boolean[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code boolean[]}
      * @param rhs       the right-hand side {@code boolean[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final boolean[] lhs, final boolean[] rhs) {
@@ -288,12 +305,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code byte}s are equal.
+     * Tests if two {@code byte}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code byte}
      * @param rhs       the right-hand side {@code byte}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final byte lhs, final byte rhs) {
@@ -301,12 +318,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code byte[]}s are equal.
+     * Tests if two {@code byte[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code byte[]}
      * @param rhs       the right-hand side {@code byte[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final byte[] lhs, final byte[] rhs) {
@@ -314,12 +331,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code char}s are equal.
+     * Tests if two {@code char}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code char}
      * @param rhs       the right-hand side {@code char}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final char lhs, final char rhs) {
@@ -327,12 +344,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code char[]}s are equal.
+     * Tests if two {@code char[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code char[]}
      * @param rhs       the right-hand side {@code char[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final char[] lhs, final char[] rhs) {
@@ -340,16 +357,16 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Append diffs from another {@link DiffResult}.
+     * Appends diffs from another {@link DiffResult}.
      *
      * <p>
      * Useful this method to compare properties which are themselves Diffable and would like to know which specific part of it is different.
      * </p>
      *
-     * <pre>
-     * public class Person implements Diffable&lt;Person&gt; {
+     * <pre>{@code
+     * public class Person implements Diffable<Person> {
      *   String name;
-     *   Address address; // implements Diffable&lt;Address&gt;
+     *   Address address; // implements Diffable<Address>
      *
      *   ...
      *
@@ -360,15 +377,16 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
      *       .build();
      *   }
      * }
+     * }
      * </pre>
      *
      * @param fieldName  the field name
      * @param diffResult the {@link DiffResult} to append
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null} or diffResult is {@code null}
      * @since 3.5
      */
-    public DiffBuilder<T> append(final String fieldName, final DiffResult<T> diffResult) {
+    public DiffBuilder<T> append(final String fieldName, final DiffResult<?> diffResult) {
         Objects.requireNonNull(diffResult, "diffResult");
         if (equals) {
             return this;
@@ -378,12 +396,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code double}s are equal.
+     * Tests if two {@code double}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code double}
      * @param rhs       the right-hand side {@code double}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final double lhs, final double rhs) {
@@ -392,12 +410,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code double[]}s are equal.
+     * Tests if two {@code double[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code double[]}
      * @param rhs       the right-hand side {@code double[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final double[] lhs, final double[] rhs) {
@@ -410,7 +428,7 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code float}
      * @param rhs       the right-hand side {@code float}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final float lhs, final float rhs) {
@@ -419,12 +437,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code float[]}s are equal.
+     * Tests if two {@code float[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code float[]}
      * @param rhs       the right-hand side {@code float[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final float[] lhs, final float[] rhs) {
@@ -432,12 +450,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code int}s are equal.
+     * Tests if two {@code int}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code int}
      * @param rhs       the right-hand side {@code int}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final int lhs, final int rhs) {
@@ -445,12 +463,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code int[]}s are equal.
+     * Tests if two {@code int[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code int[]}
      * @param rhs       the right-hand side {@code int[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final int[] lhs, final int[] rhs) {
@@ -458,12 +476,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code long}s are equal.
+     * Tests if two {@code long}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code long}
      * @param rhs       the right-hand side {@code long}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final long lhs, final long rhs) {
@@ -471,12 +489,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code long[]}s are equal.
+     * Tests if two {@code long[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code long[]}
      * @param rhs       the right-hand side {@code long[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final long[] lhs, final long[] rhs) {
@@ -484,12 +502,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@link Objects}s are equal.
+     * Tests if two {@link Objects}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@link Object}
      * @param rhs       the right-hand side {@link Object}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final Object lhs, final Object rhs) {
@@ -530,12 +548,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code Object[]}s are equal.
+     * Tests if two {@code Object[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code Object[]}
      * @param rhs       the right-hand side {@code Object[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final Object[] lhs, final Object[] rhs) {
@@ -543,12 +561,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code short}s are equal.
+     * Tests if two {@code short}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code short}
      * @param rhs       the right-hand side {@code short}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final short lhs, final short rhs) {
@@ -556,12 +574,12 @@ public class DiffBuilder<T> implements Builder<DiffResult<T>> {
     }
 
     /**
-     * Test if two {@code short[]}s are equal.
+     * Tests if two {@code short[]}s are equal.
      *
      * @param fieldName the field name
      * @param lhs       the left-hand side {@code short[]}
      * @param rhs       the right-hand side {@code short[]}
-     * @return this
+     * @return {@code this} instance.
      * @throws NullPointerException if field name is {@code null}
      */
     public DiffBuilder<T> append(final String fieldName, final short[] lhs, final short[] rhs) {

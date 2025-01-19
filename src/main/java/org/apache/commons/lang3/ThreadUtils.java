@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.function.Predicates;
 import org.apache.commons.lang3.time.DurationUtils;
 
 /**
@@ -170,13 +171,6 @@ public class ThreadUtils {
     @Deprecated
     public static final AlwaysTruePredicate ALWAYS_TRUE_PREDICATE = new AlwaysTruePredicate();
 
-    private static final Predicate<?> ALWAYS_TRUE = t -> true;
-
-    @SuppressWarnings("unchecked")
-    private static <T> Predicate<T> alwaysTruePredicate() {
-        return (Predicate<T>) ALWAYS_TRUE;
-    }
-
     /**
      * Finds the active thread with the specified id.
      *
@@ -185,7 +179,6 @@ public class ThreadUtils {
      * @throws IllegalArgumentException if the specified id is zero or negative
      * @throws  SecurityException
      *          if the current thread cannot access the system thread group
-     *
      * @throws  SecurityException  if the current thread cannot modify
      *          thread groups from this thread's thread group up to the system thread group
      */
@@ -276,7 +269,6 @@ public class ThreadUtils {
     public static Collection<ThreadGroup> findThreadGroups(final ThreadGroup threadGroup, final boolean recurse, final Predicate<ThreadGroup> predicate) {
         Objects.requireNonNull(threadGroup, "threadGroup");
         Objects.requireNonNull(predicate, "predicate");
-
         int count = threadGroup.activeGroupCount();
         ThreadGroup[] threadGroups;
         do {
@@ -342,7 +334,6 @@ public class ThreadUtils {
      *
      * @param predicate the predicate
      * @return An unmodifiable {@link Collection} of active threads matching the given predicate
-     *
      * @throws NullPointerException if the predicate is null
      * @throws  SecurityException
      *          if the current thread cannot access the system thread group
@@ -401,7 +392,6 @@ public class ThreadUtils {
      *
      * @param predicate the predicate
      * @return An unmodifiable {@link Collection} of active threads matching the given predicate
-     *
      * @throws NullPointerException if the predicate is null
      * @throws  SecurityException
      *          if the current thread cannot access the system thread group
@@ -480,7 +470,7 @@ public class ThreadUtils {
      *          thread groups from this thread's thread group up to the system thread group
      */
     public static Collection<ThreadGroup> getAllThreadGroups() {
-        return findThreadGroups(alwaysTruePredicate());
+        return findThreadGroups(Predicates.truePredicate());
     }
 
     /**
@@ -494,7 +484,7 @@ public class ThreadUtils {
      *          thread groups from this thread's thread group up to the system thread group
      */
     public static Collection<Thread> getAllThreads() {
-        return findThreads(alwaysTruePredicate());
+        return findThreads(Predicates.truePredicate());
     }
 
     /**
@@ -564,19 +554,21 @@ public class ThreadUtils {
     public static void sleepQuietly(final Duration duration) {
         try {
             sleep(duration);
-        } catch (final InterruptedException e) {
-            // be quiet.
+        } catch (final InterruptedException ignore) {
+            // Ignore & be quiet.
         }
     }
 
     /**
-     * ThreadUtils instances should NOT be constructed in standard programming. Instead, the class should be used as
-     * {@code ThreadUtils.getAllThreads()}
-     *
+     * ThreadUtils instances should NOT be constructed in standard programming. Instead, the class should be used as {@code ThreadUtils.getAllThreads()}
      * <p>
      * This constructor is public to permit tools that require a JavaBean instance to operate.
      * </p>
+     *
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public ThreadUtils() {
+        // empty
     }
 }

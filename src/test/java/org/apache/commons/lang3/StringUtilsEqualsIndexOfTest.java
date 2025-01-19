@@ -18,19 +18,25 @@ package org.apache.commons.lang3;
 
 import static org.apache.commons.lang3.Supplementary.CharU20000;
 import static org.apache.commons.lang3.Supplementary.CharU20001;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.apache.commons.lang3.Supplementary.CharUSuppCharHigh;
+import static org.apache.commons.lang3.Supplementary.CharUSuppCharLow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.nio.CharBuffer;
 import java.util.Locale;
+import java.util.stream.Stream;
 
-import org.hamcrest.core.IsNot;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Unit tests {@link org.apache.commons.lang3.StringUtils} - Equals/IndexOf methods
+ * Tests {@link StringUtils} - Equals/IndexOf methods
  */
 public class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
 
@@ -87,6 +93,30 @@ public class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
     private static final String FOOBAR = "foobar";
 
     private static final String[] FOOBAR_SUB_ARRAY = {"ob", "ba"};
+
+    static Stream<Arguments> indexOfAnyBut_withSurrogateChars() {
+        // @formatter:off
+        return Stream.of(
+            arguments(CharU20000 + CharU20001,    CharU20000, 2),
+            arguments(CharU20000 + CharU20001,    CharU20001, 0),
+            arguments(CharU20000 + CharU20001,    "abcd" + CharUSuppCharLow, 0),
+            arguments(CharU20000 + CharU20001,    "abcd" + CharUSuppCharHigh, 0),
+            arguments(CharU20000,                 CharU20000, -1),
+            arguments(CharU20000,                 CharU20001, 0),
+            arguments(CharUSuppCharHigh + "aaaa", CharUSuppCharHigh + "abcd", -1),
+            arguments(CharUSuppCharHigh + "baaa", CharUSuppCharHigh + "abcd", -1),
+            arguments(CharUSuppCharHigh + "aaaa", CharU20000 + "abcd", 0),
+            arguments("aaaa" + CharUSuppCharHigh, CharU20000 + "abcd", 4),
+            arguments(CharUSuppCharLow + "aaaa",  CharU20000 + "abcd", 0),
+            arguments("aaaa" + CharUSuppCharLow,  CharU20000 + "abcd", 4),
+            arguments(CharU20000 + "aaaa",        CharUSuppCharLow + "ab" + CharUSuppCharHigh + "cd", 0),
+            arguments(CharU20000 + "aaaa",        "abcd", 0),
+            arguments(CharU20000 + "aaaa",        "abcd" + CharUSuppCharHigh, 0),
+            arguments(CharU20000 + "aaaa",        "abcd" + CharUSuppCharLow, 0),
+            arguments("aaaa" + CharU20000,        CharU20000 + "abcd", -1)
+        );
+        // @formatter:on
+    }
 
     @Test
     public void testCompare_StringString() {
@@ -158,8 +188,8 @@ public class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
 
     @Test
     public void testCustomCharSequence() {
-        assertThat(new CustomCharSequence(FOO), IsNot.<CharSequence>not(FOO));
-        assertThat(FOO, IsNot.<CharSequence>not(new CustomCharSequence(FOO)));
+        assertNotEquals(FOO, new CustomCharSequence(FOO));
+        assertNotEquals(new CustomCharSequence(FOO), FOO);
         assertEquals(new CustomCharSequence(FOO), new CustomCharSequence(FOO));
     }
 
@@ -443,12 +473,10 @@ public class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
         assertEquals(0, StringUtils.indexOfAnyBut("aba", 'z'));
     }
 
-    @Test
-    public void testIndexOfAnyBut_StringCharArrayWithSupplementaryChars() {
-        assertEquals(2, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20000.toCharArray()));
-        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20001.toCharArray()));
-        assertEquals(-1, StringUtils.indexOfAnyBut(CharU20000, CharU20000.toCharArray()));
-        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000, CharU20001.toCharArray()));
+    @ParameterizedTest
+    @MethodSource("indexOfAnyBut_withSurrogateChars")
+    public void testIndexOfAnyBut_StringCharArrayWithSurrogateChars(final CharSequence seq, final String searchChars, final int expected) {
+        assertEquals(expected, StringUtils.indexOfAnyBut(seq, searchChars.toCharArray()));
     }
 
     @Test
@@ -468,12 +496,10 @@ public class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
         assertEquals(0, StringUtils.indexOfAnyBut("ab", "z"));
     }
 
-    @Test
-    public void testIndexOfAnyBut_StringStringWithSupplementaryChars() {
-        assertEquals(2, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20000));
-        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000 + CharU20001, CharU20001));
-        assertEquals(-1, StringUtils.indexOfAnyBut(CharU20000, CharU20000));
-        assertEquals(0, StringUtils.indexOfAnyBut(CharU20000, CharU20001));
+    @ParameterizedTest
+    @MethodSource("indexOfAnyBut_withSurrogateChars")
+    public void testIndexOfAnyBut_StringStringWithSurrogateChars(final CharSequence seq, final CharSequence searchChars, final int expected) {
+        assertEquals(expected, StringUtils.indexOfAnyBut(seq, searchChars));
     }
 
     @Test
@@ -580,7 +606,7 @@ public class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
         assertEquals(-1, StringUtils.lastIndexOf(builder, CODE_POINT, 0));
         builder.appendCodePoint(CODE_POINT);
         assertEquals(-1, StringUtils.lastIndexOf(builder, CODE_POINT, 0));
-        assertEquals(1, StringUtils.lastIndexOf(builder, CODE_POINT, 1 ));
+        assertEquals(1, StringUtils.lastIndexOf(builder, CODE_POINT, 1));
         assertEquals(-1, StringUtils.lastIndexOf(builder.toString(), CODE_POINT, 0));
         assertEquals(1, StringUtils.lastIndexOf(builder.toString(), CODE_POINT, 1));
         assertEquals(StringUtils.INDEX_NOT_FOUND, StringUtils.lastIndexOf(CharBuffer.wrap("[%{.c.0rro"), -1738, 982));
@@ -705,17 +731,17 @@ public class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
 
     @Test
     public void testLastOrdinalIndexOf() {
-        assertEquals(-1, StringUtils.lastOrdinalIndexOf(null, "*", 42) );
-        assertEquals(-1, StringUtils.lastOrdinalIndexOf("*", null, 42) );
-        assertEquals(0, StringUtils.lastOrdinalIndexOf("", "", 42) );
-        assertEquals(7, StringUtils.lastOrdinalIndexOf("aabaabaa", "a", 1) );
-        assertEquals(6, StringUtils.lastOrdinalIndexOf("aabaabaa", "a", 2) );
-        assertEquals(5, StringUtils.lastOrdinalIndexOf("aabaabaa", "b", 1) );
-        assertEquals(2, StringUtils.lastOrdinalIndexOf("aabaabaa", "b", 2) );
-        assertEquals(4, StringUtils.lastOrdinalIndexOf("aabaabaa", "ab", 1) );
-        assertEquals(1, StringUtils.lastOrdinalIndexOf("aabaabaa", "ab", 2) );
-        assertEquals(8, StringUtils.lastOrdinalIndexOf("aabaabaa", "", 1) );
-        assertEquals(8, StringUtils.lastOrdinalIndexOf("aabaabaa", "", 2) );
+        assertEquals(-1, StringUtils.lastOrdinalIndexOf(null, "*", 42));
+        assertEquals(-1, StringUtils.lastOrdinalIndexOf("*", null, 42));
+        assertEquals(0, StringUtils.lastOrdinalIndexOf("", "", 42));
+        assertEquals(7, StringUtils.lastOrdinalIndexOf("aabaabaa", "a", 1));
+        assertEquals(6, StringUtils.lastOrdinalIndexOf("aabaabaa", "a", 2));
+        assertEquals(5, StringUtils.lastOrdinalIndexOf("aabaabaa", "b", 1));
+        assertEquals(2, StringUtils.lastOrdinalIndexOf("aabaabaa", "b", 2));
+        assertEquals(4, StringUtils.lastOrdinalIndexOf("aabaabaa", "ab", 1));
+        assertEquals(1, StringUtils.lastOrdinalIndexOf("aabaabaa", "ab", 2));
+        assertEquals(8, StringUtils.lastOrdinalIndexOf("aabaabaa", "", 1));
+        assertEquals(8, StringUtils.lastOrdinalIndexOf("aabaabaa", "", 2));
     }
 
     @Test

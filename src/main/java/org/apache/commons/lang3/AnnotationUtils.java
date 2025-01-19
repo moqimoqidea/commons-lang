@@ -332,7 +332,7 @@ public class AnnotationUtils {
         final ToStringBuilder builder = new ToStringBuilder(a, TO_STRING_STYLE);
         for (final Method m : a.annotationType().getDeclaredMethods()) {
             if (m.getParameterTypes().length > 0) {
-                continue; // wtf?
+                continue; // what?
             }
             try {
                 builder.append(m.getName(), m.invoke(a));
@@ -349,7 +349,10 @@ public class AnnotationUtils {
      *
      * <p>This constructor is public to permit tools that require a JavaBean
      * instance to operate.</p>
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public AnnotationUtils() {
+        // empty
     }
 }

@@ -45,9 +45,6 @@ public class StringEscapeUtils {
 
     /* ESCAPE TRANSLATORS */
 
-    // TODO: Create a parent class - 'SinglePassTranslator' ?
-    //       It would handle the index checking + length returning,
-    //       and could also have an optimization check method.
     static class CsvEscaper extends CharSequenceTranslator {
 
         private static final char CSV_DELIMITER = ',';
@@ -66,7 +63,7 @@ public class StringEscapeUtils {
                 out.write(input.toString());
             } else {
                 out.write(CSV_QUOTE);
-                out.write(StringUtils.replace(input.toString(), CSV_QUOTE_STR, CSV_QUOTE_STR + CSV_QUOTE_STR));
+                out.write(Strings.CS.replace(input.toString(), CSV_QUOTE_STR, CSV_QUOTE_STR + CSV_QUOTE_STR));
                 out.write(CSV_QUOTE);
             }
             return Character.codePointCount(input, 0, input.length());
@@ -87,7 +84,7 @@ public class StringEscapeUtils {
                 throw new IllegalStateException("CsvUnescaper should never reach the [1] index");
             }
 
-            if ( input.charAt(0) != CSV_QUOTE || input.charAt(input.length() - 1) != CSV_QUOTE ) {
+            if (input.charAt(0) != CSV_QUOTE || input.charAt(input.length() - 1) != CSV_QUOTE) {
                 out.write(input.toString());
                 return Character.codePointCount(input, 0, input.length());
             }
@@ -95,9 +92,9 @@ public class StringEscapeUtils {
             // strip quotes
             final String quoteless = input.subSequence(1, input.length() - 1).toString();
 
-            if ( StringUtils.containsAny(quoteless, CSV_SEARCH_CHARS) ) {
+            if (StringUtils.containsAny(quoteless, CSV_SEARCH_CHARS)) {
                 // deal with escaped quotes; ie) ""
-                out.write(StringUtils.replace(quoteless, CSV_QUOTE_STR + CSV_QUOTE_STR, CSV_QUOTE_STR));
+                out.write(Strings.CS.replace(quoteless, CSV_QUOTE_STR + CSV_QUOTE_STR, CSV_QUOTE_STR));
             } else {
                 out.write(input.toString());
             }
@@ -462,7 +459,6 @@ public class StringEscapeUtils {
      *
      * @param input  String to escape values in, may be null
      * @return String with escaped values, {@code null} if null string input
-     *
      * @since 3.0
      */
     public static final String escapeEcmaScript(final String input) {
@@ -475,7 +471,6 @@ public class StringEscapeUtils {
      *
      * @param input  the {@link String} to escape, may be null
      * @return a new escaped {@link String}, {@code null} if null string input
-     *
      * @since 3.0
      */
     public static final String escapeHtml3(final String input) {
@@ -500,13 +495,11 @@ public class StringEscapeUtils {
      *
      * @param input  the {@link String} to escape, may be null
      * @return a new escaped {@link String}, {@code null} if null string input
-     *
      * @see <a href="https://web.archive.org/web/20060225074150/https://hotwired.lycos.com/webmonkey/reference/special_characters/">ISO Entities</a>
      * @see <a href="https://www.w3.org/TR/REC-html32#latin1">HTML 3.2 Character Entities for ISO Latin-1</a>
      * @see <a href="https://www.w3.org/TR/REC-html40/sgml/entities.html">HTML 4.0 Character entity references</a>
      * @see <a href="https://www.w3.org/TR/html401/charset.html#h-5.3">HTML 4.01 Character References</a>
      * @see <a href="https://www.w3.org/TR/html401/charset.html#code-position">HTML 4.01 Code positions</a>
-     *
      * @since 3.0
      */
     public static final String escapeHtml4(final String input) {
@@ -558,7 +551,6 @@ public class StringEscapeUtils {
      *
      * @param input  String to escape values in, may be null
      * @return String with escaped values, {@code null} if null string input
-     *
      * @since 3.2
      */
     public static final String escapeJson(final String input) {
@@ -578,7 +570,7 @@ public class StringEscapeUtils {
      * <p>Note that Unicode characters greater than 0x7f are as of 3.0, no longer
      *    escaped. If you still wish this functionality, you can achieve it
      *    via the following:
-     * {@code StringEscapeUtils.ESCAPE_XML.with( NumericEntityEscaper.between(0x7f, Integer.MAX_VALUE) );}</p>
+     * {@code StringEscapeUtils.ESCAPE_XML.with( NumericEntityEscaper.between(0x7f, Integer.MAX_VALUE));}</p>
      *
      * @param input  the {@link String} to escape, may be null
      * @return a new escaped {@link String}, {@code null} if null string input
@@ -592,28 +584,46 @@ public class StringEscapeUtils {
 
     /**
      * Escapes the characters in a {@link String} using XML entities.
-     *
-     * <p>For example: {@code "bread" & "butter"} =&gt;
-     * {@code &quot;bread&quot; &amp; &quot;butter&quot;}.
+     * <p>
+     * For example:
      * </p>
      *
-     * <p>Note that XML 1.0 is a text-only format: it cannot represent control
-     * characters or unpaired Unicode surrogate code points, even after escaping.
-     * {@code escapeXml10} will remove characters that do not fit in the
-     * following ranges:</p>
+     * <pre>{@code
+     * "bread" & "butter"
+     * }</pre>
+     * <p>
+     * converts to:
+     * </p>
      *
-     * <p>{@code #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]}</p>
+     * <pre>
+     * {@code
+     * &quot;bread&quot; &amp; &quot;butter&quot;
+     * }
+     * </pre>
      *
-     * <p>Though not strictly necessary, {@code escapeXml10} will escape
-     * characters in the following ranges:</p>
+     * <p>
+     * Note that XML 1.0 is a text-only format: it cannot represent control characters or unpaired Unicode surrogate code points, even after escaping. The
+     * method {@code escapeXml10} will remove characters that do not fit in the following ranges:
+     * </p>
      *
-     * <p>{@code [#x7F-#x84] | [#x86-#x9F]}</p>
+     * <p>
+     * {@code #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]}
+     * </p>
      *
-     * <p>The returned string can be inserted into a valid XML 1.0 or XML 1.1
-     * document. If you want to allow more non-text characters in an XML 1.1
-     * document, use {@link #escapeXml11(String)}.</p>
+     * <p>
+     * Though not strictly necessary, {@code escapeXml10} will escape characters in the following ranges:
+     * </p>
      *
-     * @param input  the {@link String} to escape, may be null
+     * <p>
+     * {@code [#x7F-#x84] | [#x86-#x9F]}
+     * </p>
+     *
+     * <p>
+     * The returned string can be inserted into a valid XML 1.0 or XML 1.1 document. If you want to allow more non-text characters in an XML 1.1 document, use
+     * {@link #escapeXml11(String)}.
+     * </p>
+     *
+     * @param input the {@link String} to escape, may be null
      * @return a new escaped {@link String}, {@code null} if null string input
      * @see #unescapeXml(String)
      * @since 3.3
@@ -687,7 +697,6 @@ public class StringEscapeUtils {
      * @see #unescapeJava(String)
      * @param input  the {@link String} to unescape, may be null
      * @return A new unescaped {@link String}, {@code null} if null string input
-     *
      * @since 3.0
      */
     public static final String unescapeEcmaScript(final String input) {
@@ -701,7 +710,6 @@ public class StringEscapeUtils {
      *
      * @param input  the {@link String} to unescape, may be null
      * @return a new unescaped {@link String}, {@code null} if null string input
-     *
      * @since 3.0
      */
     public static final String unescapeHtml3(final String input) {
@@ -722,7 +730,6 @@ public class StringEscapeUtils {
      *
      * @param input  the {@link String} to unescape, may be null
      * @return a new unescaped {@link String}, {@code null} if null string input
-     *
      * @since 3.0
      */
     public static final String unescapeHtml4(final String input) {
@@ -752,7 +759,6 @@ public class StringEscapeUtils {
      * @see #unescapeJava(String)
      * @param input  the {@link String} to unescape, may be null
      * @return A new unescaped {@link String}, {@code null} if null string input
-     *
      * @since 3.2
      */
     public static final String unescapeJson(final String input) {
@@ -789,8 +795,12 @@ public class StringEscapeUtils {
      *
      * <p>This constructor is public to permit tools that require a JavaBean
      * instance to operate.</p>
+     *
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public StringEscapeUtils() {
+        // empty
     }
 
 }

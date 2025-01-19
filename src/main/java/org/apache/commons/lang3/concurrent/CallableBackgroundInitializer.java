@@ -47,17 +47,18 @@ import java.util.concurrent.ExecutorService;
  * typical usage example:
  * </p>
  *
- * <pre>
+ * <pre>{@code
  * // a Callable that performs a complex computation
- * Callable&lt;Integer&gt; computationCallable = new MyComputationCallable();
+ * Callable<Integer> computationCallable = new MyComputationCallable();
  * // setup the background initializer
- * CallableBackgroundInitializer&lt;Integer&gt; initializer =
+ * CallableBackgroundInitializer<Integer> initializer =
  *     new CallableBackgroundInitializer(computationCallable);
  * initializer.start();
  * // Now do some other things. Initialization runs in a parallel thread
  * ...
  * // Wait for the end of initialization and access the result
  * Integer result = initializer.get();
+ * }
  * </pre>
  *
  * @since 3.0
@@ -71,8 +72,8 @@ public class CallableBackgroundInitializer<T> extends BackgroundInitializer<T> {
      * Creates a new instance of {@link CallableBackgroundInitializer} and sets
      * the {@link Callable} to be executed in a background thread.
      *
-     * @param call the {@link Callable} (must not be <b>null</b>)
-     * @throws IllegalArgumentException if the {@link Callable} is <b>null</b>
+     * @param call the {@link Callable} (must not be <strong>null</strong>)
+     * @throws IllegalArgumentException if the {@link Callable} is <strong>null</strong>
      */
     public CallableBackgroundInitializer(final Callable<T> call) {
         checkCallable(call);
@@ -85,10 +86,10 @@ public class CallableBackgroundInitializer<T> extends BackgroundInitializer<T> {
      * thread and the {@link ExecutorService} for managing the background
      * execution.
      *
-     * @param call the {@link Callable} (must not be <b>null</b>)
+     * @param call the {@link Callable} (must not be <strong>null</strong>)
      * @param exec an external {@link ExecutorService} to be used for task
      * execution
-     * @throws IllegalArgumentException if the {@link Callable} is <b>null</b>
+     * @throws IllegalArgumentException if the {@link Callable} is <strong>null</strong>
      */
     public CallableBackgroundInitializer(final Callable<T> call, final ExecutorService exec) {
         super(exec);
@@ -101,7 +102,7 @@ public class CallableBackgroundInitializer<T> extends BackgroundInitializer<T> {
      * undefined.
      *
      * @param callable the object to check
-     * @throws IllegalArgumentException if the {@link Callable} is <b>null</b>
+     * @throws IllegalArgumentException if the {@link Callable} is <strong>null</strong>
      */
     private void checkCallable(final Callable<T> callable) {
         Objects.requireNonNull(callable, "callable");
@@ -111,7 +112,7 @@ public class CallableBackgroundInitializer<T> extends BackgroundInitializer<T> {
      * {@inheritDoc}
      */
     @Override
-    protected Exception getTypedException(Exception e) {
+    protected Exception getTypedException(final Exception e) {
         //This Exception object will be used for type comparison in AbstractConcurrentInitializer.initialize but not thrown
         return new Exception(e);
     }

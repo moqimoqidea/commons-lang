@@ -19,14 +19,14 @@ package org.apache.commons.lang3.builder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link org.apache.commons.lang3.builder.HashCodeBuilder}.
+ * Tests {@link org.apache.commons.lang3.builder.HashCodeBuilder}.
  */
 public class HashCodeBuilderTest extends AbstractLangTest {
 
@@ -128,13 +128,13 @@ public class HashCodeBuilderTest extends AbstractLangTest {
 
     static class TestObjectWithMultipleFields {
         @SuppressWarnings("unused")
-        private int one;
+        private final int one;
 
         @SuppressWarnings("unused")
-        private int two;
+        private final int two;
 
         @SuppressWarnings("unused")
-        private int three;
+        private final int three;
 
         TestObjectWithMultipleFields(final int one, final int two, final int three) {
             this.one = one;
@@ -173,7 +173,7 @@ public class HashCodeBuilderTest extends AbstractLangTest {
 
         @Override
         public int hashCode() {
-            return b*17 + super.hashCode();
+            return b * 17 + super.hashCode();
         }
 
     }
@@ -563,9 +563,9 @@ public class HashCodeBuilderTest extends AbstractLangTest {
         // at org.apache.commons.lang.builder.HashCodeBuilder.append(HashCodeBuilder.java:422)
 
         a.hashCode();
-        assertNull(HashCodeBuilder.getRegistry());
+        assertTrue(HashCodeBuilder.getRegistry().isEmpty());
         b.hashCode();
-        assertNull(HashCodeBuilder.getRegistry());
+        assertTrue(HashCodeBuilder.getRegistry().isEmpty());
     }
 
     @Test

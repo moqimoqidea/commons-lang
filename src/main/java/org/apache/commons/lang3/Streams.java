@@ -41,8 +41,8 @@ import org.apache.commons.lang3.Functions.FailablePredicate;
  * specifically, it attempts to address the fact that lambdas are supposed
  * not to throw Exceptions, at least not checked Exceptions, AKA instances
  * of {@link Exception}. This enforces the use of constructs like
- * <pre>
- *     Consumer&lt;java.lang.reflect.Method&gt; consumer = m -&gt; {
+ * <pre>{@code
+ *     Consumer<java.lang.reflect.Method> consumer = m -> {
  *         try {
  *             m.invoke(o, args);
  *         } catch (Throwable t) {
@@ -50,11 +50,11 @@ import org.apache.commons.lang3.Functions.FailablePredicate;
  *         }
  *    };
  *    stream.forEach(consumer);
- * </pre>
+ * }</pre>
  * Using a {@link FailableStream}, this can be rewritten as follows:
- * <pre>
- *     Streams.failable(stream).forEach((m) -&gt; m.invoke(o, args));
- * </pre>
+ * <pre>{@code
+ *     Streams.failable(stream).forEach(m -> m.invoke(o, args));
+ * }</pre>
  * Obviously, the second version is much more concise and the spirit of
  * Lambda expressions is met better than in the first version.
  *
@@ -332,7 +332,7 @@ public class Streams {
          * element to determine if it should be included.
          * @return the new stream
          */
-        public FailableStream<O> filter(final FailablePredicate<O, ?> predicate){
+        public FailableStream<O> filter(final FailablePredicate<O, ?> predicate) {
             assertNotTerminated();
             stream = stream.filter(Functions.asPredicate(predicate));
             return this;
@@ -460,26 +460,26 @@ public class Streams {
      * {@link FailableConsumer} may be applied, instead of
      * {@link Predicate}, {@link Function}, or {@link Consumer}. The idea is
      * to rewrite a code snippet like this:
-     * <pre>
-     *     final List&lt;O&gt; list;
+     * <pre>{@code
+     *     final List<O> list;
      *     final Method m;
-     *     final Function&lt;O,String&gt; mapper = (o) -&gt; {
+     *     final Function<O,String> mapper = (o) -> {
      *         try {
      *             return (String) m.invoke(o);
      *         } catch (Throwable t) {
      *             throw Functions.rethrow(t);
      *         }
      *     };
-     *     final List&lt;String&gt; strList = list.stream()
+     *     final List<String> strList = list.stream()
      *         .map(mapper).collect(Collectors.toList());
-     *  </pre>
+     *  }</pre>
      *  as follows:
-     *  <pre>
-     *     final List&lt;O&gt; list;
+     *  <pre>{@code
+     *     final List<O> list;
      *     final Method m;
-     *     final List&lt;String&gt; strList = Functions.stream(list.stream())
-     *         .map((o) -&gt; (String) m.invoke(o)).collect(Collectors.toList());
-     *  </pre>
+     *     final List<String> strList = Functions.stream(list.stream())
+     *         .map((o) -> (String) m.invoke(o)).collect(Collectors.toList());
+     *  }</pre>
      *  While the second version may not be <em>quite</em> as
      *  efficient (because it depends on the creation of additional,
      *  intermediate objects, of type FailableStream), it is much more
@@ -502,26 +502,26 @@ public class Streams {
      * {@link FailableConsumer} may be applied, instead of
      * {@link Predicate}, {@link Function}, or {@link Consumer}. The idea is
      * to rewrite a code snippet like this:
-     * <pre>
-     *     final List&lt;O&gt; list;
+     * <pre>{@code
+     *     final List<O> list;
      *     final Method m;
-     *     final Function&lt;O,String&gt; mapper = (o) -&gt; {
+     *     final Function<O,String> mapper = (o) -> {
      *         try {
      *             return (String) m.invoke(o);
      *         } catch (Throwable t) {
      *             throw Functions.rethrow(t);
      *         }
      *     };
-     *     final List&lt;String&gt; strList = list.stream()
+     *     final List<String> strList = list.stream()
      *         .map(mapper).collect(Collectors.toList());
-     *  </pre>
+     *  }</pre>
      *  as follows:
-     *  <pre>
-     *     final List&lt;O&gt; list;
+     *  <pre>{@code
+     *     final List<O> list;
      *     final Method m;
-     *     final List&lt;String&gt; strList = Functions.stream(list.stream())
-     *         .map((o) -&gt; (String) m.invoke(o)).collect(Collectors.toList());
-     *  </pre>
+     *     final List<String> strList = Functions.stream(list.stream())
+     *         .map((o) -> (String) m.invoke(o)).collect(Collectors.toList());
+     *  }</pre>
      *  While the second version may not be <em>quite</em> as
      *  efficient (because it depends on the creation of additional,
      *  intermediate objects, of type FailableStream), it is much more
@@ -547,5 +547,12 @@ public class Streams {
      */
     public static <O> Collector<O, ?, O[]> toArray(final Class<O> pElementType) {
         return new ArrayCollector<>(pElementType);
+    }
+
+    /**
+     * Constructs a new instance.
+     */
+    public Streams() {
+        // empty
     }
 }

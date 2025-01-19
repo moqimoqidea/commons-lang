@@ -108,6 +108,7 @@ public class DateUtils {
             throw new UnsupportedOperationException();
         }
     }
+
     /**
      * Calendar modification types.
      */
@@ -127,25 +128,31 @@ public class DateUtils {
          */
         CEILING
     }
+
     /**
      * Number of milliseconds in a standard second.
+     *
      * @since 2.1
      */
-    public static final long MILLIS_PER_SECOND = 1000;
+    public static final long MILLIS_PER_SECOND = 1_000;
+
     /**
      * Number of milliseconds in a standard minute.
+     *
      * @since 2.1
      */
     public static final long MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
 
     /**
      * Number of milliseconds in a standard hour.
+     *
      * @since 2.1
      */
     public static final long MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
 
     /**
      * Number of milliseconds in a standard day.
+     *
      * @since 2.1
      */
     public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
@@ -170,14 +177,17 @@ public class DateUtils {
      * A week range, starting on Sunday.
      */
     public static final int RANGE_WEEK_SUNDAY = 1;
+
     /**
      * A week range, starting on Monday.
      */
     public static final int RANGE_WEEK_MONDAY = 2;
+
     /**
      * A week range, starting on the day focused.
      */
     public static final int RANGE_WEEK_RELATIVE = 3;
+
     /**
      * A week range, centered around the day focused.
      */
@@ -1113,7 +1123,7 @@ public class DateUtils {
         // truncate milliseconds
         final int millisecs = val.get(Calendar.MILLISECOND);
         if (ModifyType.TRUNCATE == modType || millisecs < 500) {
-            time = time - millisecs;
+            time -= millisecs;
         }
         if (field == Calendar.SECOND) {
             done = true;
@@ -1219,7 +1229,7 @@ public class DateUtils {
                 final int max = val.getActualMaximum(aField[0]);
                 //Calculate the offset from the minimum allowed value
                 offset = val.get(aField[0]) - min;
-                //Set roundUp if this is more than half way between the minimum and maximum
+                //Set roundUp if this is more than halfway between the minimum and maximum
                 roundUp = offset > (max - min) / 2;
             }
             //We need to remove this field
@@ -1272,7 +1282,7 @@ public class DateUtils {
 
     /**
      * Parses a string representing a date by trying a variety of different parsers,
-     * using the default date format symbols for the given locale..
+     * using the default date format symbols for the given locale.
      *
      * <p>The parse will try each parse pattern in turn.
      * A parse is only deemed successful if it parses the whole of the input string.
@@ -1770,8 +1780,12 @@ public class DateUtils {
      *
      * <p>This constructor is public to permit tools that require a JavaBean
      * instance to operate.</p>
+     *
+     * @deprecated TODO Make private in 4.0.
      */
+    @Deprecated
     public DateUtils() {
+        // empty
     }
 
 }

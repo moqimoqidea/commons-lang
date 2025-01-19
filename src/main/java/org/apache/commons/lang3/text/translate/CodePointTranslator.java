@@ -32,7 +32,14 @@ import java.io.Writer;
 public abstract class CodePointTranslator extends CharSequenceTranslator {
 
     /**
-     * Implementation of translate that maps onto the abstract translate(int, Writer) method.
+     * Constructs a new instance.
+     */
+    public CodePointTranslator() {
+        // empty
+    }
+
+    /**
+     * Implements translate to map onto the abstract translate(int, Writer) method.
      * {@inheritDoc}
      */
     @Override

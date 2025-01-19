@@ -27,7 +27,7 @@ import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link DiffResult}.
+ * Tests {@link DiffResult}.
  */
 public class DiffResultTest extends AbstractLangTest {
 
@@ -88,7 +88,7 @@ public class DiffResultTest extends AbstractLangTest {
         final SimpleClass right = new SimpleClass(false);
 
         final List<Diff<?>> diffs = left.diff(right).getDiffs();
-        final DiffResult diffResult = new DiffResult(left, right, diffs, SHORT_STYLE, DiffBuilder.TO_STRING_FORMAT);
+        final DiffResult<SimpleClass> diffResult = new DiffResult<>(left, right, diffs, SHORT_STYLE, DiffBuilder.TO_STRING_FORMAT);
 
         assertEquals(left, diffResult.getLeft());
         assertEquals(right, diffResult.getRight());
@@ -132,20 +132,6 @@ public class DiffResultTest extends AbstractLangTest {
     }
 
     @Test
-    public void testToStringOutput() {
-        // @formatter:off
-        final DiffResult<EmptyClass> result = DiffBuilder.<EmptyClass>builder()
-                .setLeft(new EmptyClass())
-                .setRight(new EmptyClass())
-                .setStyle(ToStringStyle.SHORT_PREFIX_STYLE)
-                .build()
-                .append("test", false, true)
-                .build();
-        // @formatter:on
-        assertEquals("DiffResultTest.EmptyClass[test=false] differs from DiffResultTest.EmptyClass[test=true]", result.toString());
-    }
-
-    @Test
     public void testToStringFormat() {
         // @formatter:off
         final DiffResult<EmptyClass> result = DiffBuilder.<EmptyClass>builder()
@@ -158,6 +144,20 @@ public class DiffResultTest extends AbstractLangTest {
                 .build();
         // @formatter:on
         assertEquals("DiffResultTest.EmptyClass[test=false] <> DiffResultTest.EmptyClass[test=true]", result.toString());
+    }
+
+    @Test
+    public void testToStringOutput() {
+        // @formatter:off
+        final DiffResult<EmptyClass> result = DiffBuilder.<EmptyClass>builder()
+                .setLeft(new EmptyClass())
+                .setRight(new EmptyClass())
+                .setStyle(ToStringStyle.SHORT_PREFIX_STYLE)
+                .build()
+                .append("test", false, true)
+                .build();
+        // @formatter:on
+        assertEquals("DiffResultTest.EmptyClass[test=false] differs from DiffResultTest.EmptyClass[test=true]", result.toString());
     }
 
     @Test

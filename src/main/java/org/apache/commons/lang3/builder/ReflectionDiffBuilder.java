@@ -37,7 +37,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
  * </p>
  *
  * <pre>{@code
- * public class Person implements Diffable&lt;Person&gt; {
+ * public class Person implements Diffable<Person> {
  *   String name;
  *   int age;
  *   boolean smoker;
@@ -87,6 +87,13 @@ public class ReflectionDiffBuilder<T> implements Builder<DiffResult<T>> {
         private DiffBuilder<T> diffBuilder;
 
         /**
+         * Constructs a new instance.
+         */
+        public Builder() {
+            // empty
+        }
+
+        /**
          * Builds a new configured {@link ReflectionDiffBuilder}.
          *
          * @return a new configured {@link ReflectionDiffBuilder}.
@@ -99,7 +106,7 @@ public class ReflectionDiffBuilder<T> implements Builder<DiffResult<T>> {
          * Sets the DiffBuilder.
          *
          * @param diffBuilder the DiffBuilder.
-         * @return this.
+         * @return {@code this} instance.
          */
         public Builder<T> setDiffBuilder(final DiffBuilder<T> diffBuilder) {
             this.diffBuilder = diffBuilder;
@@ -110,7 +117,7 @@ public class ReflectionDiffBuilder<T> implements Builder<DiffResult<T>> {
          * Sets field names to exclude from output. Intended for fields like {@code "password"} or {@code "lastModificationDate"}.
          *
          * @param excludeFieldNames field names to exclude.
-         * @return this.
+         * @return {@code this} instance.
          */
         public Builder<T> setExcludeFieldNames(final String... excludeFieldNames) {
             this.excludeFieldNames = toExcludeFieldNames(excludeFieldNames);
@@ -186,6 +193,12 @@ public class ReflectionDiffBuilder<T> implements Builder<DiffResult<T>> {
         return !field.isAnnotationPresent(DiffExclude.class);
     }
 
+    /**
+     * Appends fields using reflection.
+     *
+     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @see SecurityManager#checkPermission
+     */
     private void appendFields(final Class<?> clazz) {
         for (final Field field : FieldUtils.getAllFields(clazz)) {
             if (accept(field)) {
@@ -200,12 +213,17 @@ public class ReflectionDiffBuilder<T> implements Builder<DiffResult<T>> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @see SecurityManager#checkPermission
+     */
     @Override
     public DiffResult<T> build() {
         if (getLeft().equals(getRight())) {
             return diffBuilder.build();
         }
-
         appendFields(getLeft().getClass());
         return diffBuilder.build();
     }
@@ -228,6 +246,21 @@ public class ReflectionDiffBuilder<T> implements Builder<DiffResult<T>> {
         return diffBuilder.getRight();
     }
 
+    /**
+     * Reads a {@link Field}, forcing access if needed.
+     *
+     * @param field
+     *            the field to use
+     * @param target
+     *            the object to call on, may be {@code null} for {@code static} fields
+     * @return the field value
+     * @throws NullPointerException
+     *             if the field is {@code null}
+     * @throws IllegalAccessException
+     *             if the field is not made accessible
+     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @see SecurityManager#checkPermission
+     */
     private Object readField(final Field field, final Object target) throws IllegalAccessException {
         return FieldUtils.readField(field, target, true);
     }

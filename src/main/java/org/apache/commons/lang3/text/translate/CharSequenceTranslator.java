@@ -23,6 +23,8 @@ import java.io.Writer;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 /**
  * An API for translating text.
  * Its core use is to escape and unescape text. Because escaping and unescaping
@@ -47,6 +49,13 @@ public abstract class CharSequenceTranslator {
      */
     public static String hex(final int codePoint) {
         return Integer.toHexString(codePoint).toUpperCase(Locale.ENGLISH);
+    }
+
+    /**
+     * Constructs a new instance.
+     */
+    public CharSequenceTranslator() {
+        // empty
     }
 
     /**
@@ -90,6 +99,7 @@ public abstract class CharSequenceTranslator {
      * @param writer Writer to translate the text to
      * @throws IOException if and only if the Writer produces an IOException
      */
+    @SuppressWarnings("resource") // Caller closes writer
     public final void translate(final CharSequence input, final Writer writer) throws IOException {
         Objects.requireNonNull(writer, "writer");
         if (input == null) {
@@ -132,8 +142,7 @@ public abstract class CharSequenceTranslator {
     public final CharSequenceTranslator with(final CharSequenceTranslator... translators) {
         final CharSequenceTranslator[] newArray = new CharSequenceTranslator[translators.length + 1];
         newArray[0] = this;
-        System.arraycopy(translators, 0, newArray, 1, translators.length);
-        return new AggregateTranslator(newArray);
+        return new AggregateTranslator(ArrayUtils.arraycopy(translators, 0, newArray, 1, translators.length));
     }
 
 }

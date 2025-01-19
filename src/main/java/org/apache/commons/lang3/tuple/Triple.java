@@ -34,7 +34,6 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
  * @param <L> the left element type
  * @param <M> the middle element type
  * @param <R> the right element type
- *
  * @since 3.2
  */
 public abstract class Triple<L, M, R> implements Comparable<Triple<L, M, R>>, Serializable {
@@ -59,7 +58,6 @@ public abstract class Triple<L, M, R> implements Comparable<Triple<L, M, R>>, Se
      * @param <M> the middle element type
      * @param <R> the right element type
      * @return the empty array singleton that can be assigned without compiler warning.
-     *
      * @since 3.10.
      */
     @SuppressWarnings("unchecked")
@@ -103,6 +101,13 @@ public abstract class Triple<L, M, R> implements Comparable<Triple<L, M, R>>, Se
      */
     public static <L, M, R> Triple<L, M, R> ofNonNull(final L left, final M middle, final R right) {
         return ImmutableTriple.ofNonNull(left, middle, right);
+    }
+
+    /**
+     * Constructs a new instance.
+     */
+    public Triple() {
+        // empty
     }
 
     /**
@@ -163,11 +168,15 @@ public abstract class Triple<L, M, R> implements Comparable<Triple<L, M, R>>, Se
 
     /**
      * Returns a suitable hash code.
+     * <p>
+     * The hash code is adapted from the definition in {@code Map.Entry}.
+     * </p>
      *
-     * @return the hash code
+     * @return the hash code.
      */
     @Override
     public int hashCode() {
+        // See Map.Entry API specification
         return Objects.hashCode(getLeft()) ^ Objects.hashCode(getMiddle()) ^ Objects.hashCode(getRight());
     }
 
